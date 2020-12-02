@@ -1,0 +1,57 @@
+# simple LCA likelihood
+model{
+
+# Probabilities of ending up in 16 result patterns
+
+y[1] <- prev * (SeKK * SeCCA * SeCAA * SePCR) + (1-prev) * ((1-SpKK) * (1-SpCCA) * (1-SpCAA) * (1-SpPCR)) #1111
+
+y[2] <- prev * (SeKK * SeCCA * SeCAA * (1-SePCR)) + (1-prev) * ((1-SpKK) * (1-SpCCA) * (1-SpCAA) * SpPCR) #1110
+
+y[3] <- prev * (SeKK * SeCCA * (1-SeCAA) * SePCR) + (1-prev) * ((1-SpKK) * (1-SpCCA) * SpCAA * (1-SpPCR)) #1101
+
+y[4] <- prev * (SeKK * SeCCA * (1-SeCAA) * (1-SePCR)) + (1-prev) * ((1-SpKK) * (1-SpCCA) * SpCAA * SpPCR) # 1100
+
+y[5] <- prev * (SeKK * (1-SeCCA) * SeCAA * SePCR) + (1-prev) * ((1-SpKK) * SpCCA * (1-SpCAA) * (1-SpPCR)) # 1011
+
+y[6] <- prev * (SeKK * (1-SeCCA) * SeCAA * (1-SePCR)) + (1-prev) * ((1-SpKK) * SpCCA * (1-SpCAA) * SpPCR) # 1010
+
+y[7] <- prev * (SeKK * (1-SeCCA) * (1-SeCAA) * SePCR) + (1-prev) * ((1-SpKK) * SpCCA * SpCAA * (1-SpPCR)) # 1001
+
+y[8] <- prev * (SeKK * (1-SeCCA) * (1-SeCAA) * (1-SePCR)) + (1-prev) * ((1-SpKK) * SpCCA * SpCAA * SpPCR) # 1000
+
+y[9] <- prev * ((1-SeKK) * SeCCA * SeCAA * SePCR) + (1-prev) * (SpKK * (1-SpCCA) * (1-SpCAA) * (1-SpPCR)) #0111
+
+y[10] <- prev * ((1-SeKK) * SeCCA * SeCAA * (1-SePCR)) + (1-prev) * (SpKK * (1-SpCCA) * (1-SpCAA) * SpPCR) # 0110
+
+y[11] <- prev * ((1-SeKK) * SeCCA * (1-SeCAA) * SePCR) + (1-prev) * (SpKK * (1-SpCCA) * SpCAA * (1-SpPCR)) # 0101
+
+y[12] <- prev * ((1-SeKK) * SeCCA * (1-SeCAA) * (1-SePCR)) + (1-prev) * (SpKK * (1-SpCCA) * SpCAA * SpPCR) # 0100
+
+y[13] <- prev * ((1-SeKK) * (1-SeCCA) * SeCAA * SePCR) + (1-prev) * (SpKK * SpCCA * (1-SpCAA) * (1-SpPCR)) # 0011
+
+y[14] <- prev * ((1-SeKK) * (1-SeCCA) * SeCAA * (1-SePCR)) + (1-prev) * (SpKK * SpCCA * (1-SpCAA) * SpPCR) # 0010
+
+y[15] <- prev * ((1-SeKK) * (1-SeCCA) * (1-SeCAA) * SePCR) + (1-prev) * (SpKK * SpCCA * SpCAA * (1-SpPCR)) # 0001
+
+y[16] <- prev * ((1-SeKK) * (1-SeCCA) * (1-SeCAA) * (1-SePCR)) + (1-prev) * (SpKK * SpCCA * SpCAA * SpPCR) # 0000
+
+# tying the probabilities to the count data with a multinomial distribution
+counts ~ dmulti(y, n)
+
+# Priors
+SeKK ~ dbeta(1.43, 1.29) # this was used in Clements et al.
+SeCCA ~ dbeta(3.05, 1.51) # this was used in Clements et al.
+SeCAA ~ dbeta(3.05, 1.51) # this was used in Clements et al.
+SePCR ~ dbeta(3.05, 1.51) # this was NOT used in Clements et al., mildly informed prior same as CAA and CCA, is this correct??
+
+SpKK ~ dbeta(21.2, 2.06) # this was used in Clements et al.
+SpCCA ~ dbeta(5.38, 1.49) # this was used in Clements et al.
+SpCAA ~ dbeta(5.38, 1.49) # this was used in Clements et al.
+SpPCR ~ dbeta(5.38, 1.49) # this was NOT used in Clements et al., mildly informed prior same as CAA and CCA, is this correct??
+
+prev ~ dbeta(1, 1) # uninformative prior on prevalence
+
+
+
+
+}
