@@ -30,7 +30,7 @@ parameters <- c("SeKK", "SeCCA", "SeCAA", "SePCR",
 
 # MCMC
 samples <- jags(data, inits=myinits, parameters,
-                model.file ="LCA_simple.txt", n.chains=4, n.iter=10000, 
+                model.file ="LCA_simple_informedPriors.txt", n.chains=4, n.iter=10000, 
                 n.burnin=1, n.thin=1, DIC=F)
 
 # Convergence diagnostics

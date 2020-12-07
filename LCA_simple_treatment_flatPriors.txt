@@ -1,0 +1,63 @@
+# simple LCA likelihood
+model{
+
+# Probabilities of ending up in 16 result patterns
+
+# for each treatment group
+for(i in 1:2){ 
+
+y[i, 1] <- prev[i] * (SeKK * SeCCA * SeCAA * SePCR) + (1-prev[i]) * ((1-SpKK) * (1-SpCCA) * (1-SpCAA) * (1-SpPCR)) #1111
+
+y[i, 2] <- prev[i] * (SeKK * SeCCA * SeCAA * (1-SePCR)) + (1-prev[i]) * ((1-SpKK) * (1-SpCCA) * (1-SpCAA) * SpPCR) #1110
+
+y[i, 3] <- prev[i] * (SeKK * SeCCA * (1-SeCAA) * SePCR) + (1-prev[i]) * ((1-SpKK) * (1-SpCCA) * SpCAA * (1-SpPCR)) #1101
+
+y[i, 4] <- prev[i] * (SeKK * SeCCA * (1-SeCAA) * (1-SePCR)) + (1-prev[i]) * ((1-SpKK) * (1-SpCCA) * SpCAA * SpPCR) # 1100
+
+y[i, 5] <- prev[i] * (SeKK * (1-SeCCA) * SeCAA * SePCR) + (1-prev[i]) * ((1-SpKK) * SpCCA * (1-SpCAA) * (1-SpPCR)) # 1011
+
+y[i, 6] <- prev[i] * (SeKK * (1-SeCCA) * SeCAA * (1-SePCR)) + (1-prev[i]) * ((1-SpKK) * SpCCA * (1-SpCAA) * SpPCR) # 1010
+
+y[i, 7] <- prev[i] * (SeKK * (1-SeCCA) * (1-SeCAA) * SePCR) + (1-prev[i]) * ((1-SpKK) * SpCCA * SpCAA * (1-SpPCR)) # 1001
+
+y[i, 8] <- prev[i] * (SeKK * (1-SeCCA) * (1-SeCAA) * (1-SePCR)) + (1-prev[i]) * ((1-SpKK) * SpCCA * SpCAA * SpPCR) # 1000
+
+y[i, 9] <- prev[i] * ((1-SeKK) * SeCCA * SeCAA * SePCR) + (1-prev[i]) * (SpKK * (1-SpCCA) * (1-SpCAA) * (1-SpPCR)) #0111
+
+y[i, 10] <- prev[i] * ((1-SeKK) * SeCCA * SeCAA * (1-SePCR)) + (1-prev[i]) * (SpKK * (1-SpCCA) * (1-SpCAA) * SpPCR) # 0110
+
+y[i, 11] <- prev[i] * ((1-SeKK) * SeCCA * (1-SeCAA) * SePCR) + (1-prev[i]) * (SpKK * (1-SpCCA) * SpCAA * (1-SpPCR)) # 0101
+
+y[i, 12] <- prev[i] * ((1-SeKK) * SeCCA * (1-SeCAA) * (1-SePCR)) + (1-prev[i]) * (SpKK * (1-SpCCA) * SpCAA * SpPCR) # 0100
+
+y[i, 13] <- prev[i] * ((1-SeKK) * (1-SeCCA) * SeCAA * SePCR) + (1-prev[i]) * (SpKK * SpCCA * (1-SpCAA) * (1-SpPCR)) # 0011
+
+y[i, 14] <- prev[i] * ((1-SeKK) * (1-SeCCA) * SeCAA * (1-SePCR)) + (1-prev[i]) * (SpKK * SpCCA * (1-SpCAA) * SpPCR) # 0010
+
+y[i, 15] <- prev[i] * ((1-SeKK) * (1-SeCCA) * (1-SeCAA) * SePCR) + (1-prev[i]) * (SpKK * SpCCA * SpCAA * (1-SpPCR)) # 0001
+
+y[i, 16] <- prev[i] * ((1-SeKK) * (1-SeCCA) * (1-SeCAA) * (1-SePCR)) + (1-prev[i]) * (SpKK * SpCCA * SpCAA * SpPCR) # 0000
+}
+
+prev[1] <- genprev - 0.5 * diff
+prev[2] <- genprev + 0.5 * diff
+
+# tying the probabilities to the count data with a multinomial distribution
+counts[1,] ~ dmulti(y[1, ], n1)
+counts[2,] ~ dmulti(y[2, ], n2)
+
+# Priors
+SeKK ~ dbeta(1,1) 
+SeCCA ~ dbeta(1,1) 
+SeCAA ~ dbeta(1,1) 
+SePCR ~ dbeta(1,1) 
+
+SpKK ~ dbeta(1,1) 
+SpCCA ~ dbeta(1,1) 
+SpCAA ~ dbeta(1,1) 
+SpPCR ~ dbeta(1,1)
+
+genprev ~ dbeta(1, 1) # uninformative prior on overall prevalence
+diff ~ dunif((genprev-1)*2, genprev*2) # prior on difference
+
+}
