@@ -23,12 +23,12 @@ sim.LCA <- function(SeKK=SeKK, SeCCA=SeCCA, SeCAA=SeCAA, SePCR=SePCR,
   data <- list(SeKK=SeKK, SeCCA=SeCCA, SeCAA=SeCAA, SePCR=SePCR,
                SpKK=SpKK, SpCCA=SpCCA, SpCAA=SpCAA, SpPCR=SpPCR,
                prev=prev, n=n)
-  
+
   # Use JAGS to sample from model
-  simres <- run.jags("sim_LCAsimple.txt", data=data, monitor=c("counts"), 
+  simres <- run.jags("../models/sim_LCAsimple.txt", data=data, monitor=c("counts"),
                      sample=1, n.chains=1, summarise=FALSE, silent.jags = TRUE)
   counts <- as.matrix(simres$mcmc)
-  
+
   # Extend sample to full simulated data frame
   fullsimdat <- matrix(c(1,1,1,1,
                          1,1,1,0,
