@@ -1,8 +1,6 @@
-# clear workspace:
-rm(list=ls())
+# Source helpers.
+source("./scripts/helpers/helpers.R")
 
-# open jags library
-library(R2jags)
 
 # define / read in data
 # NOTE: This is simulated data, replace with real data
@@ -33,7 +31,7 @@ parameters <- c("SeKK", "SeCCA", "SeCAA", "SePCR",
 
 # MCMC
 samples <- jags(data, inits=myinits, parameters,
-                model.file ="../models/LCA_simple_flatPriors.txt", n.chains=4, n.iter=10000,
+                model.file ="./models/LCA_simple_flatPriors.txt", n.chains=4, n.iter=10000,
                 n.burnin=2000, n.thin=1, DIC=F)
 
 # Convergence diagnostics
@@ -42,5 +40,9 @@ samples$BUGSoutput$summary[,"Rhat"] # Convergence: R-hat value is smaller or equ
 
 # Information about posterior distributions
 print(samples) # posterior mean, standard deviations, and quantiles
-# for plots, you can use the samples directly
-posteriorsamples <- samples$BUGSoutput$sims.matrix
+
+# debugonce(plot.estimates)
+
+# Plot.
+plot.estimates(samples)
+
