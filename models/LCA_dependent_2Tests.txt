@@ -74,28 +74,28 @@ theta5 ~ dbeta(1, 1)
 theta6 ~ dbeta(1, 1)
 theta7 ~ dbeta(1, 1)
 theta8 ~ dbeta(1, 1)
-theta9 ~ dbeta(1, 1)
-theta10 ~ dbeta(1, 1)
-theta11 ~ dbeta(1, 1)
+theta9 <- theta8
+theta10 <- theta8
+theta11 <- theta8
 theta12 ~ dbeta(1, 1)
-theta13 ~ dbeta(1, 1)
-theta14 ~ dbeta(1, 1)
-theta15 ~ dbeta(1, 1)
+theta13 <- theta12
+theta14 <- theta12
+theta15 <- theta12
 theta16 ~ dbeta(1, 1)
-theta17 ~ dbeta(1, 1)
-theta18 ~ dbeta(1, 1)
-theta19 ~ dbeta(1, 1)
-theta20 ~ dbeta(1, 1)
-theta21 ~ dbeta(1, 1)
-theta22 ~ dbeta(1, 1)
-theta23 ~ dbeta(1, 1)
+theta17 <- theta16
+theta18 <- theta16
+theta19 <- theta16
+theta20 <- theta16
+theta21 <- theta16
+theta22 <- theta16
+theta23 <- theta16
 theta24 ~ dbeta(1, 1)
-theta25 ~ dbeta(1, 1)
-theta26 ~ dbeta(1, 1)
-theta27 ~ dbeta(1, 1)
-theta28 ~ dbeta(1, 1)
-theta29 ~ dbeta(1, 1)
-theta30 ~ dbeta(1, 1)
-theta31 ~ dbeta(1, 1)
+theta25 <- theta24
+theta26 <- theta24
+theta27 <- theta24
+theta28 <- theta24
+theta29 <- theta24
+theta30 <- theta24
+theta31 <- theta24
 
 }
