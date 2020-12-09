@@ -86,6 +86,8 @@ The uncertainty about a parameter value *before* seeing the data is represented 
 - SpCAA ~ dbeta(21.2, 2.06) (this prior is based on private conversation with P. Hoekstra)
 - SpPCR ~ dbeta(21.2, 2.06) (this prior is based on private conversation with P. Hoekstra)
 
+![](../img/informed_priors.jpg)
+
 ### Data Preparation
 
 #### Required R-Packages
