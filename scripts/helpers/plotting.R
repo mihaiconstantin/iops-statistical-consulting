@@ -1,5 +1,3 @@
-source("./scripts/helpers.R")
-
 # Plot parameters estimates from jags.
 density.plot <- function(model.output) {
     # On exit stop asking questions.
