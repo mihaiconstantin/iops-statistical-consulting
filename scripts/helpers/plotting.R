@@ -1,5 +1,5 @@
 # Plot parameters estimates from jags.
-density.plot <- function(model.output) {
+plot.estimates <- function(model.output) {
     # On exit stop asking questions.
     on.exit({
         # Ask to show next plot.
@@ -19,7 +19,7 @@ density.plot <- function(model.output) {
         # Get data ready for ggplot2.
         estimates <- data.frame(
             x = data[, col],
-            y = as.factor(rep(1, length(x)))
+            y = as.factor(rep(1, length(data[, col])))
         )
         
         # Relevant statistics for the plot.
