@@ -1,6 +1,6 @@
 ---
 title: 'IOPS - Statistical Consulting - Project #5'
-author: "Angelika M. Stefana, Mihai A. Constantin"
+author: "Angelika M. Stefan, Mihai A. Constantin"
 date: "12/8/2020"
 output: html_document
 ---
@@ -109,7 +109,12 @@ All models require the data to be in form of a pattern-count table (see figure a
 
 ### Statistical Models and Parameter Estimation
 
-In the following, we will describe how to conduct a Latent Class Analysis for the results of the current study. We propose four models that can account for different aspects of the complexity in the data. As mentioned before, it is impossible to extend the model to accommodate all possible effects because this would increase the number of parameters to an extent that makes it impossible to obtain stable estimates from the data. Therefore, the four models we propose make different assumptions, which we will mention in the model description.
+In the following, we will describe how to conduct a Latent Class Analysis for the results of the current study. We propose four models that can account for different aspects of the complexity in the data. As mentioned before, it is impossible to extend the model to accommodate all possible effects because this would increase the number of parameters to an extent that makes it impossible to obtain stable estimates from the data. Therefore, the four models we propose make different assumptions, which we will mention in the model description. Below is an overview of the model assumptions:
+
+- Model 1: No treatment effect, no test dependence (equivalent to the simple model described above)
+- Model 2: No dependence between tests, but model allows for a treatment effect
+- Model 3: Dependence between two tests, no treatment effect
+- Model 4: Dependence between all tests, no treatment effect, specificity of 3 tests fixed to 1
 
 #### Model 1: No treatment effect, no test dependence
 Model 1 estimates test sensitivity and specificity based on the assumptions that tests are conditionally independent and that the prevalence does not differ between treatment groups. Model 1 with flat (uninformed) priors can be fitted using the following code:
@@ -153,9 +158,48 @@ samples <- jags(data, inits=myinits, parameters,
 
 ```
 
-The first step we need to do is to check whether the model estimation process converged.
+__Convergence Diagnostics__
+
+The posterior distributions for LCA models cannot be calculated analytically. Therefore, the fitting algorithm uses a sampling procedure (MCMC sampling) to draw samples from the posterior distribution. These samples can then be used to get information about the posterior distribution (e.g., distribution quantiles). Before we look at the posterior distributions, we first need to take a look at the samples themselves to check whether the MCMC sampling procedure worked (some more information on MCMC diagnostics can be found [here](https://jrnold.github.io/bayesian_notes/mcmc-diagnostics.html)). This is to make sure that the samples are actually draws from the posterior distribution, statistically speaking, that the MCMC algorithm "converged". The following tests are therefore also called "convergence diagnostics".
+
+First, we need to make sure that there is no autocorrelation between the samples. We can check this visually by inspecting so-called trace plots (see below). The trace plots should look like a "hairy caterpillar", i.e., you should not see any "mountains" or "valleys" in the plot, just something like white noise.
 
 ```{r}
 library(MCMCvis)
 MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
 ```
+
+Second, we take a look at the so-called R-hat values. To understand this value, it is first important to know that the algorithm that draws samples from the posterior distribution depends on starting values. Starting values can be chosen arbitrarily, and if the procedure converges, the resulting posterior distribution should not be dependent on the values with which the algorithm started sampling. The R-hat value checks for this by comparing the estimates of model parameters within and between independent sampling procedures (these are called "chains"). If the R-hat value is larger than 1.05, this should be considered as a warning (see also [here](https://mc-stan.org/rstan/reference/Rhat.html) for a description of R-hat).
+
+```{r}
+samples$BUGSoutput$summary[,"Rhat"]
+```
+
+__What to do in case of convergence issues?__
+
+If there are convergence issues, there are a couple of actions that can help to improve convergence. First, if you see that right side of the traceplot looks good, but the left side not, you can discard more samples from the start. This can be done using the `n.burnin` argument in the `jags()` function. For example, you could increase n.burnin from 2000 to 3000 in this case. Second, if there is autocorrelation throughout the chain, you can only look at every second, third, forth, etc. sampled parameter value. This can be done using the `n.thin` command in the `jags()` function. For example, if `n.thin=10`, the algorithm only uses every tenth sample. Note that both of these actions decrease the number of used samples from which you infer the posterior distribution, so if you increase n.burnin or n.thin, it might be necessary to also increase the parameter `n.iter`, i.e., the overall number of samples drawn. The third action you can take is to adjust the starting values to parameters that are more plausible. However, this requires some knowledge about the posterior distribution and should therefore be done only with care. If nothing helps and the R-hat value for a parameter is still larger than 1.05, the posterior estimates for this parameter should not be interpreted.
+
+__Obtaining Parameter Estimates from the Posterior Distribution__
+
+In Bayesian statistical models, all information about the parameter estimates is contained in the posterior distribution. To get a first impression of the posterior distributions, it is sensible to plot them first (see below).
+
+```{r}
+MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
+```
+
+We can see one posterior distribution for each parameter. Looking at the posterior distributions gives us an idea about the (a)symmetry of the distribution and about good ways to summarize the posterior. For example, an often-reported value is the mean of the posterior distribution, but for a highly asymmetric distribution it might also be relevant to report the median or mode.
+
+```{r}
+MCMCplot(samples)
+```
+The next plot (see above) shows the posterior means and 95\% credible intervals for each parameter. The width of the credible interval indicates the uncertainty about the paramter estimate.
+
+Finally, we can take a look at a table that summarizes the characteristics of the posterior distributions:
+
+```{r}
+print(samples)
+```
+
+The table shows for each parameter the mean (mu.vect), the standard deviation (sd.vect), as well as five quantiles of the posterior distribution. It also contains the R-hat value and an effective sample size for convergence diagnostics (this is related to the samples from the posterior distribution, *not* the number of participants in the study).
+
+
