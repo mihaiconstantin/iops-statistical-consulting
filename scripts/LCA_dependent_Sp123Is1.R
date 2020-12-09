@@ -1,8 +1,8 @@
 # clear workspace:  
 rm(list=ls()) 
 
-# open jags library
-library(R2jags)
+# Source helpers.
+source("./scripts/helpers/helpers.R")
 
 # define / read in data
 # NOTE: This is data from the baseline measurement, replace with data from later measurement occasions
@@ -41,7 +41,7 @@ parameters <- c("prev", "Se1", "Se2", "Se3", "Se4", "Sp4")
 
 # MCMC
 samples <- jags(data, inits=myinits, parameters,
-                model.file ="../models/LCA_dependent_Spec123Is1.txt", n.chains=4, n.iter=100000, 
+                model.file ="./models/LCA_dependent_Spec123Is1.txt", n.chains=4, n.iter=100000, 
                 n.burnin=3000, n.thin=20, DIC=F)
 
 # Convergence diagnostics

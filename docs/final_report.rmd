@@ -333,7 +333,7 @@ samples <- jags(data, inits=myinits, parameters,
 
 __Model Parameters__
 
-As mentioned earlier, the conditional dependence model requires more parameters than the models assuming conditional independence. We used a different parametrization to fit the conditional dependence models, containing 31 parameters in total, some of which are constrained or not estimated depending on the imposed constraints. For example, in Model 2, we impose the constraint that only two models are dependent. This reduces the number of parameters to 11 free parameters. The file ".docs/ParameterOverview.pdf" contains an overview of all parameters in the full model as well as of the effects of constraints in Model 3 and Model 4. It also explains how posteriors for sensitivity, specificity, and prevalence are computed from the model parameters. The prior distributions used in Models 3 and 4 are uninformed prior distributions because we did not have the time to elicit prior knowledge about the parameter values from the substantive experts in the project. The file ".scripts/LCA_dependent_full.txt" contains the full model with all 31 parameters which can be adapted if different constraints should be applied based on experts' prior knowledge.
+As mentioned earlier, the conditional dependence model requires more parameters than the models assuming conditional independence. We used a different parametrization to fit the conditional dependence models, containing 31 parameters in total, some of which are constrained or not estimated depending on the imposed constraints (for an explanation of the parametrization, see [Berkvens et al. 2006](https://doi.org/10.1097/01.ede.0000198422.64801.8d)). For example, in Model 2, we impose the constraint that only two models are dependent. This reduces the number of parameters to 11 free parameters. The file ".docs/ParameterOverview.pdf" contains an overview of all parameters in the full model as well as of the effects of constraints in Model 3 and Model 4. It also explains how posteriors for sensitivity, specificity, and prevalence are computed from the model parameters. The prior distributions used in Models 3 and 4 are uninformed prior distributions because we did not have the time to elicit prior knowledge about the parameter values from the substantive experts in the project. The file ".scripts/LCA_dependent_full.txt" contains the full model with all 31 parameters which can be adapted if different constraints should be applied based on experts' prior knowledge.
 
 __Convergence Diagnostics__
 
@@ -356,6 +356,71 @@ print(samples)
 
 #### Model 4: Conditional Dependence Between All Tests
 
+Model 4 allows for conditional dependence between all tests. To make this model identifiable, we constrain the specificity of the first three tests in the result pattern table to be equal to 1. Additionally, we impose mild probabilistic constraints through the prior distributions: We impose a Beta(3.05, 1.51) prior on estimates of sensitivity, constrain the sum of sensitivity and specificity of Test 4 to be larger than 1, and constrain the prevalence to lie between values of [1/n, 1-1/n] to avoid that the sampling gets stuck at the limits of the parameter space.
 
+The interpretation of parameters in Model 4 is analogue to Model 3, and a list of all model parameters can be found in the document "./docs/ParameterOverview.pdf". Model 4 can be fitted using the following code:
 
+```{r results='hide', message=FALSE}
+# Source helpers.
+source("./scripts/helpers/helpers.R")
+
+# define / read in data
+# NOTE: This is simulated data, replace with real data
+sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
+                     SpKK = 1, SpCCA = 1, SpCAA = 1, SpPCR = 0.8,
+                     prev = 0.9, n = 150)
+counts <- sim[,5]
+n <- sum(counts)
+
+# define data object that is passed on to JAGS
+data <- list("counts", "n") 
+
+# define starting values for chains
+myinits <-	list(
+  list(theta1=0.9, theta2=0.6, theta4=0.5, theta5=0.5,
+       theta8=0.8, theta9=0.8, theta10=0.7, theta11=0.7, theta16=0.5, 
+       theta17=0.7, theta18=0.7, theta19=0.7, theta20=0.7, theta21=0.7,
+       theta22=0.7, theta23=0.7, theta24=0.8),
+  list(theta1=0.8, theta2=0.5, theta4=0.6, theta5=0.7,
+       theta8=0.5, theta9=0.6, theta10=0.7, theta11=0.7, theta16=0.5, 
+       theta17=0.9, theta18=0.8, theta19=0.6, theta20=0.5, theta21=0.5,
+       theta22=0.9, theta23=0.7, theta24=0.9),
+  list(theta1=0.7, theta2=0.7, theta4=0.7, theta5=0.4,
+       theta8=0.7, theta9=0.7, theta10=0.7, theta11=0.7, theta16=0.5, 
+       theta17=0.7, theta18=0.6, theta19=0.8, theta20=0.6, theta21=0.8,
+       theta22=0.7, theta23=0.8, theta24=0.7),
+  list(theta1=0.5, theta2=0.8, theta4=0.8, theta5=0.8,
+       theta8=0.7, theta9=0.5, theta10=0.5, theta11=0.5, theta16=0.5, 
+       theta17=0.5, theta18=0.5, theta19=0.5, theta20=0.5, theta21=0.5,
+       theta22=0.5, theta23=0.5, theta24=0.5)
+) 
+
+# parameters to be monitored
+parameters <- c("prev", "Se1", "Se2", "Se3", "Se4", "Sp4")
+
+# MCMC
+samples <- jags(data, inits=myinits, parameters,
+                model.file ="./models/LCA_dependent_Spec123Is1.txt", n.chains=4, n.iter=100000, 
+                n.burnin=3000, n.thin=20, DIC=F)
+
+```
+
+__Convergence Diagnostics__
+
+Convergence diagnostics for Model 4 can be determined using the code below. Please refer to the convergence diagnostics section of Model 1 for an interpretation of the output.
+
+```{r}
+MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
+samples$BUGSoutput$summary[,"Rhat"]
+```
+
+__Obtaining Parameter Estimates from the Posterior Distribution__
+
+Parameter estimates from the posterior distribution can be obtained using the code below. Please refer to the parallel section of Model 1 for an interpretation of the output.
+
+```{r}
+MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
+MCMCplot(samples)
+print(samples)
+```
 
