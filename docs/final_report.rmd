@@ -193,6 +193,7 @@ We can see one posterior distribution for each parameter. Looking at the posteri
 ```{r}
 MCMCplot(samples)
 ```
+
 The next plot (see above) shows the posterior means and 95\% credible intervals for each parameter. The width of the credible interval indicates the uncertainty about the paramter estimate.
 
 Finally, we can take a look at a table that summarizes the characteristics of the posterior distributions:
@@ -209,7 +210,7 @@ Model 1 with informed priors can be fitted using the same code as before, but re
 
 #### Model 2: Treatment Effect Model
 
-Model 2 includes a parameter that accommodates the treatment effect, i.e, the two treatment groups are allowed to differ in this model. The data needs to be in the format of one result pattern table per group, using the same order of tests as before (KK-CCA-CAA-PCR). Double-check with the simulated data `group1sim` and `group2sim` whether the real data was preprocessed properly before running the analysis with the real data.
+Model 2 includes a parameter that accommodates the treatment effect, i.e, the two treatment groups are allowed to differ in this model. The data needs to be in the format of one result pattern table per group, using the same order of tests as before (KK-CCA-CAA-PCR). Double-check with the simulated data `group1sim` and `group2sim` whether the real data was preprocessed properly before running the analysis with the real data. The model can be fitted using the following code:
 
 ```{r setup2, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -277,4 +278,84 @@ MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
 MCMCplot(samples)
 print(samples)
 ```
+
+__Model 2 with Informed Priors__
+
+Model 1 with informed priors can be fitted using the same code as before, but replacing the `model.file` argument with `"./models/LCA_simple_treatment_informedPriors.txt"`. 
+
+#### Model 3: Dependency between two tests
+
+Model 3 allows for two tests being conditionally dependent. It always assumes that the dependent models are the first two columns in your result pattern table. For example, if your result pattern table looks like the one below, the dependent tests are KK and CCA.
+
+```{r}
+sim
+```
+
+If you want to change the order of the tests in your result pattern table to allow different tests to be dependent, __USE THE FUNCTION MIHAI CREATED AS SHOWN BELOW__ . We recommend running Model 3 with all different combinations of tests (6 combinations overall) and check the robustness of sensitivity and specificity estimates to the test dependency.
+
+The model can be fitted using the following code:
+
+```{r results='hide', message=FALSE}
+# Source helpers.
+source("./scripts/helpers/helpers.R")
+
+# define / read in data
+# NOTE: This is simulated data, replace with real data
+sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
+                     SpKK = 0.95, SpCCA = 0.95, SpCAA = 0.95, SpPCR = 0.95,
+                     prev = 0.9, n = 350)
+counts <- sim[,5]
+n <- sum(counts)
+
+# define data object that is passed on to JAGS
+data <- list("counts", "n")
+
+# define starting values for chains
+myinits <-	list(
+  list(theta1=0.8, theta2=0.7, theta3=0.9, theta4=0.6, theta5=0.4, theta6=0.7,
+       theta7=0.6, theta8=0.7, theta12=0.8, theta16=0.7, theta24=0.9),
+  list(theta1=0.9, theta2=0.6, theta3=0.8, theta4=0.5, theta5=0.5, theta6=0.8,
+       theta7=0.7, theta8=0.8, theta12=0.9, theta16=0.5, theta24=0.8),
+  list(theta1=0.5, theta2=0.8, theta3=0.7, theta4=0.7, theta5=0.7, theta6=0.5,
+       theta7=0.5, theta8=0.7, theta12=0.6, theta16=0.6, theta24=0.7),
+  list(theta1=0.7, theta2=0.5, theta3=0.8, theta4=0.8, theta5=0.6, theta6=0.6,
+       theta7=0.4, theta8=0.6, theta12=0.5, theta16=0.4, theta24=0.6)
+)
+
+# parameters to be monitored
+parameters <- c("prev", "Se1", "Sp1", "Se2", "Sp2", "Se3", "Sp3", "Se4", "Sp4")
+
+# MCMC
+samples <- jags(data, inits=myinits, parameters,
+                model.file ="./models/LCA_dependent_2Tests.txt", n.chains=4, n.iter=15000,
+                n.burnin=5000, n.thin=1, DIC=F)
+```
+
+__Model Parameters__
+
+As mentioned earlier, the conditional dependence model requires more parameters than the models assuming conditional independence. We used a different parametrization to fit the conditional dependence models, containing 31 parameters in total, some of which are constrained or not estimated depending on the imposed constraints. For example, in Model 2, we impose the constraint that only two models are dependent. This reduces the number of parameters to 11 free parameters. The file ".docs/ParameterOverview.pdf" contains an overview of all parameters in the full model as well as of the effects of constraints in Model 3 and Model 4. It also explains how posteriors for sensitivity, specificity, and prevalence are computed from the model parameters. The prior distributions used in Models 3 and 4 are uninformed prior distributions because we did not have the time to elicit prior knowledge about the parameter values from the substantive experts in the project. The file ".scripts/LCA_dependent_full.txt" contains the full model with all 31 parameters which can be adapted if different constraints should be applied based on experts' prior knowledge.
+
+__Convergence Diagnostics__
+
+Convergence diagnostics for Model 3 can be determined using the code below. Please refer to the convergence diagnostics section of Model 1 for an interpretation of the output.
+
+```{r}
+MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
+samples$BUGSoutput$summary[,"Rhat"]
+```
+
+__Obtaining Parameter Estimates from the Posterior Distribution__
+
+Parameter estimates from the posterior distribution can be obtained using the code below. Please refer to the parallel section of Model 1 for an interpretation of the output.
+
+```{r}
+MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
+MCMCplot(samples)
+print(samples)
+```
+
+#### Model 4: Conditional Dependence Between All Tests
+
+
+
 
