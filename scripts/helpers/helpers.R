@@ -12,20 +12,20 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Clear everything.
-# rm(list = ls())
+rm(list = ls())
 
 # Loader ------------------------------------------------------------------
 
 # User feedback.
-# cat("Loading...", "\n")
+cat("Loading...", "\n")
 
 # # # Load the libraries
 library(ggplot2)
 library(gridExtra)
-# library(R2jags)
+library(R2jags)
 
 source(paste0(getwd(), "/scripts/helpers/", "plotting.R"))
-source(paste0(getwd(), "/scripts/helpers/", "preprocessing.R"))
+# source(paste0(getwd(), "/scripts/helpers/", "preprocessing.R"))
 
 # User feedback.
 cat("Loaded successfully.", "\n")
