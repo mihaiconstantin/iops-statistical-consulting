@@ -1,8 +1,5 @@
-# clear workspace:  
-rm(list=ls()) 
-
-# open jags library
-library(R2jags)
+# Source helper files.
+source("./scripts/helpers/helpers.R")
 
 # define / read in data
 # NOTE: This is simulated data, replace with real data
@@ -13,7 +10,7 @@ counts <- sim[,5]
 n <- sum(counts)
 
 # define data object that is passed on to JAGS
-data <- list("counts", "n") 
+data <- list("counts", "n")
 
 # define starting values for chains
 myinits <-	list(
@@ -25,14 +22,14 @@ myinits <-	list(
        theta7=0.5, theta8=0.7, theta12=0.6, theta16=0.6, theta24=0.7),
   list(theta1=0.7, theta2=0.5, theta3=0.8, theta4=0.8, theta5=0.6, theta6=0.6,
        theta7=0.4, theta8=0.6, theta12=0.5, theta16=0.4, theta24=0.6)
-) 
+)
 
 # parameters to be monitored
 parameters <- c("prev", "Se1", "Sp1", "Se2", "Sp2", "Se3", "Sp3", "Se4", "Sp4")
 
 # MCMC
 samples <- jags(data, inits=myinits, parameters,
-                model.file ="../models/LCA_dependent_2Tests.txt", n.chains=4, n.iter=15000, 
+                model.file ="./models/LCA_dependent_2Tests.txt", n.chains=4, n.iter=15000,
                 n.burnin=5000, n.thin=1, DIC=F)
 
 # Convergence diagnostics
@@ -41,5 +38,6 @@ samples$BUGSoutput$summary[,"Rhat"] # Convergence: R-hat value is smaller or equ
 
 # Information about posterior distributions
 print(samples) # posterior mean, standard deviations, and quantiles
-# for plots, you can use the samples directly
-posteriorsamples <- samples$BUGSoutput$sims.matrix
+
+# Plot.
+plot.estimates(samples)
