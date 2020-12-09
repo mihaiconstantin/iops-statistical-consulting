@@ -106,7 +106,6 @@ source("./scripts/sim_LCAsimple.R")
 
 All models require the data to be in form of a pattern-count table (see figure above). We provide a function that transfers raw data (individual values on each test for each participant) to the pattern-count table.
 
-
 ### Statistical Models and Parameter Estimation
 
 In the following, we will describe how to conduct a Latent Class Analysis for the results of the current study. We propose four models that can account for different aspects of the complexity in the data. As mentioned before, it is impossible to extend the model to accommodate all possible effects because this would increase the number of parameters to an extent that makes it impossible to obtain stable estimates from the data. Therefore, the four models we propose make different assumptions, which we will mention in the model description. Below is an overview of the model assumptions:
@@ -117,7 +116,9 @@ In the following, we will describe how to conduct a Latent Class Analysis for th
 - Model 4: Dependence between all tests, no treatment effect, specificity of 3 tests fixed to 1
 
 #### Model 1: No treatment effect, no test dependence
-Model 1 estimates test sensitivity and specificity based on the assumptions that tests are conditionally independent and that the prevalence does not differ between treatment groups. Model 1 with flat (uninformed) priors can be fitted using the following code:
+Model 1 estimates test sensitivity and specificity based on the assumptions that tests are conditionally independent and that the prevalence does not differ between treatment groups. Note that the model requires the result pattern table to be in the order KK-CCA-CAA-PCR. Check with the structure of the simulated data (`sim`) when replacing the simulated data with the real data. 
+
+Model 1 with flat (uninformed) priors can be fitted using the following code:
 
 
 ```{r results='hide', message=FALSE}
@@ -202,4 +203,78 @@ print(samples)
 
 The table shows for each parameter the mean (mu.vect), the standard deviation (sd.vect), as well as five quantiles of the posterior distribution. It also contains the R-hat value and an effective sample size for convergence diagnostics (this is related to the samples from the posterior distribution, *not* the number of participants in the study).
 
+__Model 1 with informed priors__
+
+Model 1 with informed priors can be fitted using the same code as before, but replacing the `model.file` argument with `"./models/LCA_simple_informedPriors.txt"`. 
+
+#### Model 2: Treatment Effect Model
+
+Model 2 includes a parameter that accommodates the treatment effect, i.e, the two treatment groups are allowed to differ in this model. The data needs to be in the format of one result pattern table per group, using the same order of tests as before (KK-CCA-CAA-PCR). Double-check with the simulated data `group1sim` and `group2sim` whether the real data was preprocessed properly before running the analysis with the real data.
+
+```{r setup2, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = '../')
+```
+
+```{r results='hide', message=FALSE}
+# Source helpers.
+source("./scripts/helpers/helpers.R")
+
+# define / read in data
+# NOTE: This is simulated data, replace with real data
+group1sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
+                     SpKK = 0.95, SpCCA = 0.95, SpCAA = 0.95, SpPCR = 0.95,
+                     prev = 0.9, n = 350)
+group2sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
+                     SpKK = 0.95, SpCCA = 0.95, SpCAA = 0.95, SpPCR = 0.95,
+                     prev = 0.8, n = 350)
+counts <- matrix(c(group1sim$counts, group2sim$counts), nrow=2, byrow=TRUE)
+n1 <- sum(counts[1,])
+n2 <- sum(counts[2,])
+
+# define data object that is passed on to JAGS
+data <- list("counts", "n1", "n2")
+
+# define starting values for chains
+myinits <-	list(
+  list(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
+       SpKK = 0.8, SpCCA = 0.8, SpCAA = 0.8, SpPCR = 0.8, genprev=0.9, diff=0.1),
+  list(SeKK = 0.7, SeCCA = 0.6, SeCAA = 0.6, SePCR = 0.6,
+       SpKK = 0.5, SpCCA = 0.5, SpCAA = 0.5, SpPCR = 0.5, genprev=0.8, diff=0.01),
+  list(SeKK = 0.6, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
+       SpKK = 0.9, SpCCA = 0.9, SpCAA = 0.9, SpPCR = 0.9, genprev=0.7, diff=0.2),
+  list(SeKK = 0.6, SeCCA = 0.6, SeCAA = 0.6, SePCR = 0.6,
+       SpKK = 0.8, SpCCA = 0.8, SpCAA = 0.8, SpPCR = 0.8, genprev=0.9, diff=0.05)
+)
+
+# parameters to be monitored
+parameters <- c("SeKK", "SeCCA", "SeCAA", "SePCR",
+                "SpKK", "SpCCA", "SpCAA", "SpPCR", "genprev", "diff")
+
+# MCMC
+samples <- jags(data, inits=myinits, parameters,
+                model.file ="./models/LCA_simple_treatment_flatPriors.txt", n.chains=4, n.iter=10000,
+                n.burnin=3000, n.thin=1, DIC=F)
+```
+
+The estimated parameters of Model 2 are the same as the ones for Model 1, with the exception of "genprev" and "diff". The parameter "genprev" gives an estimate for the average prevalence across treatment groups ((prevalence_group1+prevalence_group2)/2). The parameter "diff" estimates the difference between treatment group prevalences (prevalence_group1-prevalence_group2). Note that a negative difference implies that the prevalence in group 2 is larger than in group 1. Other than this, diagnostics and interpretation for Model 2 works exactly like for Model 1, as can be seen below.
+
+__Convergence Diagnostics__
+
+Convergence diagnostics for Model 2 can be determined using the code below. Please refer to the convergence diagnostics section of Model 1 for an interpretation of the output.
+
+```{r}
+MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
+samples$BUGSoutput$summary[,"Rhat"]
+```
+
+__Obtaining Parameter Estimates from the Posterior Distribution__
+
+Parameter estimates from the posterior distribution can be obtained using the code below. Please refer to the parallel section of Model 1 for an interpretation of the output.
+
+```{r}
+MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
+MCMCplot(samples)
+print(samples)
+```
 
