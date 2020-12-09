@@ -5,7 +5,6 @@ rm(list=ls())
 library(R2jags)
 
 # define / read in data
-# NOTE: This is data from the baseline measurement, replace with data from later measurement occasions
 # NOTE: This is simulated data, replace with real data
 sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
                      SpKK = 0.95, SpCCA = 0.95, SpCAA = 0.95, SpPCR = 0.95,

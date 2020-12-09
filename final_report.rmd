@@ -51,11 +51,91 @@ $$
 
 If tests are conditional dependent, but this is not accounted for in the statistical model, the estimates of sensitivity and specificity can be biased (see also: [Gardner et al., 2000](https://doi.org/10.1016/S0167-5877(00)00119-7), [Berkvens et al. 2006](https://doi.org/10.1097/01.ede.0000198422.64801.8d)). However, introducing parameters for conditional dependence among all tests renders the model unidentifiable because there are too many parameters and too few degrees of freedom. For example, for four tests, there are 31 parameters that need to be estimated if we allow for dependence between all tests, but there are only 15 degrees of freedom in the data (16 counts for different patterns, but we know the final count if we know the first 15). Therefore, if we want to allow for dependence between the tests, we need to impose additional constraints on the model. For example, we can set the specificity of some of the tests to one or only allow for dependence between two models.
 
-### Data Analysis
+### Statistical Analyses: General Remarks and Data Preparation
 
-In the following, we will describe how to conduct a Latent Class Analysis for the results of the current study. We propose four models that can account for different aspects of the complexity in the data. As mentioned before, it is impossible to extend the model to accommodate all possible effects because this would increase the number of parameters to an extent that makes it impossible to obtain stable estimates from the data.
+#### A Remark On Bayesian Modeling
+Following the article by [Clements et al. (2018)](https://doi.org/10.1186/s13071-018-2700-4), we estimate the sensitivity and specificity of the tests in the Bayesian framework. For an accessible introduction to Bayesian analyses, see [Wagenmakers et al. (2018)](https://doi.org/10.3758/s13423-017-1343-3). In Bayesian parameter estimation, uncertainty about a parameter (e.g., the specificity of the KK method) is represented in a probability distribution. The probability density represents the plausibility of parameter values, that is, plausible parameter values have a high probability density whereas implausible values have a low probability density. Wide probability distributions signal a high degree of uncertainty, whereas peaked distributions signal low uncertainty. Uncertainty can also be represented in terms of credible intervals (similar to confidence intervals in frequentist statistics), that is, intervals that indicate the probability with which an unobserved parameter will fall into a certain range. For example, for a 95\% credible interval, the probability that the parameter falls within the defined range is 95\%.
+
+The uncertainty about a parameter value *before* seeing the data is represented in the prior distribution. The uncertainty about a parameter value *after* seeing the data is represented in the posterior distribution. Typically, there is more uncertainty before seeing the data than after seeing the data, so the posterior distribution is more peaked than the prior distribution. To conduct a Bayesian analysis, it is necessary to define prior distributions for all unknown parameters. These prior distributions can either be defined as wide, so-called "uninformed" prior distributions that indicate a maximum uncertainty about the parameter values (here, we use uniform distributions across the range of possible parameter values as uninformed priors, unless specified differently), or they can be specified as so-called "informed" prior distributions that have a (slight) peak on parameter values that are more plausible to begin with. Formulating informed prior distributions has the advantage that the model predictions are constrained to realistic scenarios from the beginning, and that they can make the final estimates more precise. However, with little data, they can also draw the final results towards the values that obtained a high plausibility in the prior distributions, so it is reasonable to check the robustness of the results with respect to the prior distribution when conducting Bayesian Analyses. Here, we use the following informed prior distributions for sensitivity and specificity (if not specified differently):
+
+- SeKK ~ dbeta(1.43, 1.29) (this was also used in Clements et al., 2018)
+- SeCCA ~ dbeta(3.05, 1.51) (this was also used in Clements et al., 2018)
+- SeCAA ~ dbeta(3.05, 1.51) (this was also used in Clements et al., 2018)
+- SePCR ~ dbeta(3.05, 1.51) (this prior is based on private conversation with P. Hoekstra)
+
+- SpKK ~ dbeta(21.2, 2.06) (this was also used in Clements et al., 2018)
+- SpCCA ~ dbeta(5.38, 1.49) (this was also used in Clements et al., 2018)
+- SpCAA ~ dbeta(21.2, 2.06) (this prior is based on private conversation with P. Hoekstra)
+- SpPCR ~ dbeta(21.2, 2.06) (this prior is based on private conversation with P. Hoekstra)
+
+#### Required R-Packages
+To conduct the analyses, you will need to install several R-packages. This can be done using the following code:
+
+```{r eval=FALSE, results='hide'}
+install.packages("R2jags")
+install.packages("runjags")
+install.packages("MCMCvis")
+```
+
+#### A Note On Pseudo-Results
+For the analyses described below, we use pseudo-results based on simulated data. When simulated data is replaced with real study data, researchers should double-check that the structure of the data is the same. The simulation function can be loaded using the following code:
+
+```{r results='hide'}
+source("./scripts/sim_LCAsimple.R")
+```
+
+All models require the data to be in form of a pattern-count table (see figure above). We provide a function that transfers raw data (individual values on each test for each participant) to the pattern-count table.
 
 
+### Statistical Models
+
+In the following, we will describe how to conduct a Latent Class Analysis for the results of the current study. We propose four models that can account for different aspects of the complexity in the data. As mentioned before, it is impossible to extend the model to accommodate all possible effects because this would increase the number of parameters to an extent that makes it impossible to obtain stable estimates from the data. Therefore, the four models we propose make different assumptions, which we will mention in the model description.
+
+#### Model 1: No treatment effect, no test dependence
+Model 1 estimates test sensitivity and specificity based on the assumptions that tests are conditionally independent and that the prevalence does not differ between treatment groups. Model 1 with flat (uninformed) priors can be fitted using the following code:
+
+
+```{r results='hide', message=FALSE}
+# open jags library
+library(R2jags)
+
+# define / read in data
+# NOTE: This is simulated data, replace with real data
+sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
+               SpKK = 0.95, SpCCA = 0.95, SpCAA = 0.95, SpPCR = 0.95,
+               prev = 0.9, n = 350)
+counts <- sim[,5]
+n <- sum(counts)
+
+# define data object that is passed on to JAGS
+data <- list("counts", "n")
+
+# define starting values
+myinits <-	list(
+  list(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
+       SpKK = 0.8, SpCCA = 0.8, SpCAA = 0.8, SpPCR = 0.8, prev=0.9),
+  list(SeKK = 0.6, SeCCA = 0.7, SeCAA = 0.8, SePCR = 0.6,
+       SpKK = 0.6, SpCCA = 0.7, SpCAA = 0.5, SpPCR = 0.5, prev=0.8),
+  list(SeKK = 0.5, SeCCA = 0.5, SeCAA = 0.5, SePCR = 0.5,
+       SpKK = 0.9, SpCCA = 0.9, SpCAA = 0.9, SpPCR = 0.9, prev=0.7),
+  list(SeKK = 0.6, SeCCA = 0.6, SeCAA = 0.6, SePCR = 0.6,
+       SpKK = 0.8, SpCCA = 0.8, SpCAA = 0.8, SpPCR = 0.8, prev=0.9)
+)
+
+# parameters to be monitored
+parameters <- c("SeKK", "SeCCA", "SeCAA", "SePCR",
+                "SpKK", "SpCCA", "SpCAA", "SpPCR", "prev")
+
+# MCMC
+samples <- jags(data, inits=myinits, parameters,
+                model.file ="./models/LCA_simple_flatPriors.txt", n.chains=4, n.iter=10000,
+                n.burnin=2000, n.thin=1, DIC=F)
+
+```
+
+The first step we need to do is to check whether the model estimation process converged.
 
 ```{r}
+library(MCMCvis)
+MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
 ```
