@@ -25,7 +25,8 @@ library(gridExtra)
 library(R2jags)
 
 source(paste0(getwd(), "/scripts/helpers/", "plotting.R"))
-# source(paste0(getwd(), "/scripts/helpers/", "preprocessing.R"))
+source(paste0(getwd(), "/scripts/helpers/", "preprocessing.R"))
+source(paste0(getwd(), "/scripts/helpers/", "constants.R"))
 
 # User feedback.
 cat("Loaded successfully.", "\n")
