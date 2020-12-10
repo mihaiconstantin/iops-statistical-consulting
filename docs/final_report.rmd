@@ -129,7 +129,7 @@ You can load and inspect this toy data set using:
 load("./data/data_toy.RData")
 
 # View the dataset
-print(data.data.toy)
+print(data.toy)
 ```
 
 While you real data my contain many respondents, this toy data set only contains only 20 respondents.
