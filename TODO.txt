@@ -1,8 +1,0 @@
-Report:
-
-Introduction: Copy & Paste from Overleaf (Angelika)
-Explanation of LCA & statistical analysis: Check (Mihai)
-Statistical Analyses: General Remarks -> Check (Mihai)
-Statistical Analyses: Data Preprocessing -> Write (Mihai) + Check (Angelika)
-Statistical Models M1-M4 (Angelika), within M3: section on rearranging the counts table (Mihai)
-DONE
