@@ -1,3 +1,6 @@
+# Clear everything.
+rm(list = ls())
+
 # Source helper files.
 source("./scripts/helpers/helpers.R")
 
