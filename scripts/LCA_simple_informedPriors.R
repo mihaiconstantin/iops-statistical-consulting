@@ -1,7 +1,6 @@
 # Source helpers.
 source("./scripts/helpers/helpers.R")
 
-
 # define / read in data
 # NOTE: This is data from the baseline measurement, replace with data from later measurement occasions
 counts <- c(128, 4, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -40,5 +39,3 @@ print(samples) # posterior mean, standard deviations, and quantiles
 
 # Plot.
 plot.estimates(samples)
-
-# TODO: add function to save plots.

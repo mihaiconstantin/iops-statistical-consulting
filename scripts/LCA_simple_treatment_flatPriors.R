@@ -44,8 +44,5 @@ samples$BUGSoutput$summary[,"Rhat"] # Convergence: R-hat value is smaller or equ
 # Information about posterior distributions
 print(samples) # posterior mean, standard deviations, and quantiles
 
-# for plots, you can use the samples directly
-posteriorsamples <- samples$BUGSoutput$sims.matrix
-
 # Plot.
-plot.estimates(posteriorsamples)
+plot.estimates(samples)

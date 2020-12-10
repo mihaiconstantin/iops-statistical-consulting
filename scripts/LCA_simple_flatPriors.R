@@ -1,7 +1,6 @@
 # Source helpers.
 source("./scripts/helpers/helpers.R")
 
-
 # define / read in data
 # NOTE: This is simulated data, replace with real data
 sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
@@ -41,8 +40,5 @@ samples$BUGSoutput$summary[,"Rhat"] # Convergence: R-hat value is smaller or equ
 # Information about posterior distributions
 print(samples) # posterior mean, standard deviations, and quantiles
 
-# debugonce(plot.estimates)
-
 # Plot.
 plot.estimates(samples)
-
