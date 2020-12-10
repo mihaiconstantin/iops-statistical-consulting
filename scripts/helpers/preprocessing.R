@@ -1,16 +1,8 @@
-# Set working directory.
-# setwd(...)
 
-# Load the data.
-data <- read.csv("data.csv", fileEncoding="UTF-8-BOM")
-
-# Normalize column names.
-colnames(data) <- trimws(tolower(colnames(data)))
-
-# Register cut-offs.
-kk <- function(value) {
+# Cutoff KK.
+cutoff.kk <- function(value) {
     if(is.na(value)) return(NA)
-    
+
     if(value >= 1) {
         return(1)
     }
@@ -19,21 +11,23 @@ kk <- function(value) {
     }
 }
 
-poc.cca <- function(value) {
+# Cutoff CCA.
+cutoff.cca <- function(value, trace) {
     if(is.na(value)) return(NA)
-    
+
     if(value >= 4) {
         return(1)
-    } else if(value == 2 || value == 3) { 
-        return(1)
+    } else if(value == 2 || value == 3) {
+        return(trace)
     } else {
         return(0)
     }
 }
-    
-caa <- function(value) {
+
+# Cutoff CAA.
+cutoff.caa <- function(value) {
     if(is.na(value)) return(NA)
-    
+
     if(value >= 0.6) {
         return(1)
     } else {
@@ -41,10 +35,11 @@ caa <- function(value) {
     }
 }
 
-pcr <- function(value) {
+# Cutoff PCR.
+cutoff.pcr <- function(value) {
     if(is.na(value)) return(NA)
-    
-    if(value < 50) { 
+
+    if(value < 50) {
         return(1)
     } else {
         return(0)
