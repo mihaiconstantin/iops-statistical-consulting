@@ -23,10 +23,12 @@ cat("Loading...", "\n")
 library(ggplot2)
 library(gridExtra)
 library(R2jags)
+library(runjags)
 
 source(paste0(getwd(), "/scripts/helpers/", "plotting.R"))
 source(paste0(getwd(), "/scripts/helpers/", "preprocessing.R"))
 source(paste0(getwd(), "/scripts/helpers/", "constants.R"))
+source(paste0(getwd(), "/scripts/helpers/", "simulating.R"))
 
 # User feedback.
 cat("Loaded successfully.", "\n")
