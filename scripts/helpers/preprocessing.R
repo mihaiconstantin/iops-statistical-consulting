@@ -46,29 +46,37 @@ cutoff.pcr <- function(value) {
     }
 }
 
-# Match tests to cut-off strategy.
-test.suite <- list(
-    kk = kk,
-    poc.cca = poc.cca,
-    caa = caa,
-    pcr = pcr
-)
+# Apply the cutoffs to the raw data.
+apply.cutoff <- function(raw.data, trace = 1) {
+    # Which columns are not test measurements?
+    meta.columns <- which(!grepl(paste(..TESTS.., collapse = "|"), colnames(raw.data)))
 
-# Determine cutoffs for a single time point for a single respondent.
-determine.cutoff <- function(measurement, tests = test.suite) {
-    # Create storage for outcomes.
-    outcomes <- rep(NA, 4)
-    
-    # Add names.
-    names(outcomes) <- names(tests)
-    
-    for (column in colnames(measurement)) {
-        if(column %in% names(tests)) {
-            outcomes[column] <- tests[[column]](measurement[column])
+    # Create new data frame to store cutoff scores.
+    data <- as.data.frame(matrix(NA, nrow = nrow(raw.data), ncol = ncol(raw.data)))
+
+    # Copy the non-test columns.
+    data[, meta.columns] <- raw.data[, meta.columns]
+
+    # Apply the cutoff for each test type in turn.
+    for (test in ..TESTS..) {
+        # Identify all columns that belong to a certain test.
+        cols <- which(grepl(test, colnames(raw.data)))
+
+        # Apply the cutoff and inject the result.
+        for (c in cols) {
+            if("trace" %in% formalArgs(..CUTOFFS..[[test]])) {
+                data[, c] <- sapply(raw.data[, c], ..CUTOFFS..[[test]], trace = trace)
+            } else {
+                data[, c] <- sapply(raw.data[, c], ..CUTOFFS..[[test]])
+            }
         }
     }
-    
-    return(outcomes)
+
+    # Update the column names.
+    colnames(data) <- colnames(raw.data)
+
+    return(data)
+}
 }
 
 
