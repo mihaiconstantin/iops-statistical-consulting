@@ -61,10 +61,10 @@ Let us imagine for a second that the first two tests are identical, i.e., the re
 In mathematical terms, conditional (in)dependence can be described in terms of (non-)equivalence of conditional probabilities. If conditional independence holds,
 
 $$
-\text{P(Positive Test 2} \mid \text{Infected} \cap \text{Positive Test 1}) = \text{P(Positive Test 2} \mid \text{Infected} \cap \text{Negative Test 1}) 
+\text{P(Positive Test 2} \mid \text{Infected} \cap \text{Positive Test 1}) = \text{P(Positive Test 2} \mid \text{Infected} \cap \text{Negative Test 1})
 $$
 $$
-\text{P(Negative Test 2} \mid \text{Healthy} \cap \text{Positive Test 1}) = \text{P(Negative Test 2} \mid \text{Healthy} \cap \text{Negative Test 1}) 
+\text{P(Negative Test 2} \mid \text{Healthy} \cap \text{Positive Test 1}) = \text{P(Negative Test 2} \mid \text{Healthy} \cap \text{Negative Test 1})
 $$
 
 If tests are conditional dependent, but this is not accounted for in the statistical model, the estimates of sensitivity and specificity can be biased (see also: [Gardner et al., 2000](https://doi.org/10.1016/S0167-5877(00)00119-7), [Berkvens et al. 2006](https://doi.org/10.1097/01.ede.0000198422.64801.8d)). However, introducing parameters for conditional dependence among all tests renders the model unidentifiable because there are too many parameters and too few degrees of freedom. For example, for four tests, there are 31 parameters that need to be estimated if we allow for dependence between all tests, but there are only 15 degrees of freedom in the data (16 counts for different patterns, but we know the final count if we know the first 15). Therefore, if we want to allow for dependence between the tests, we need to impose additional constraints on the model. For example, we can set the specificity of some of the tests to one or only allow for dependence between two models.
@@ -97,16 +97,103 @@ To conduct the analyses, you will need to install several R-packages. This can b
 install.packages("R2jags")
 install.packages("runjags")
 install.packages("MCMCvis")
+install.packages("ggplot2")
+install.packages("gridExtra")
 ```
 
 #### A Note On Pseudo-Results
-For the analyses described below, we use pseudo-results based on simulated data. When simulated data is replaced with real study data, researchers should double-check that the structure of the data is the same. The simulation function can be loaded using the following code:
+For the analyses described below, we use pseudo-results based on simulated data.
+Such simulated data can be obtained using the function `sim.LCA()` located at `./scripts/helpers/simulating.R`.
+To load this function you can source the file mentioned above as:
 
 ```{r results='hide', message=FALSE}
-source("./scripts/helpers/simulating.R")
+# source("./scripts/sim_LCAsimple.R")
 ```
 
-All models require the data to be in form of a pattern-count table (see figure above). We provide a function that transfers raw data (individual values on each test for each participant) to the pattern-count table.
+#### Using Real Data
+
+To run the analyses described below, your data needs to be in a pattern-count table (see figure above).
+When using simulated data, the data is already provided to you in this format, and can readily be plugged into the models.
+However, when using real data, there are a few pre-processing steps that are required, namely:
+
+1. ensure the raw data is in a wide format and the columns are labeled accordingly
+2. convert the data from raw test scores to cutoff values
+3. use the cutoff values to create the pattern-count table
+
+We provide two functions for performing the data pre-processing required to run the analyses.
+To illustrate how these functions work, we use a toy data set containing 20 respondents and four tests (i.e., KK, CCA, CAA, and PCR) at four time points (i.e., week 1, 2, 3, and 4).
+You can load and inspect this toy data set using:
+
+```{r}
+# Load the dataset.
+load("./data/data_toy.RData")
+
+# View the dataset
+print(data.data.toy)
+```
+
+While you real data my contain many respondents, this toy data set only contains only 20 respondents.
+However, it is very important that your real data set follows the same structure as this toy data set.
+This means that:
+
+- the first two columns should contain the ID and the group variables
+- each next four columns should contain the four tests at a specific time point 1 (e.g., KK, CCA, CAA, and PCR at time point 1)
+- the ordering of the tests should be the same across all time points (i.e., preferably KK, CCA, CAA, and PCR)
+- the first two columns should be named "id" and "group"
+- the remainder of the columns should be named using the following pattern: "test_timepoint", e.g.:
+    - kk_t1 -> for KK at time point 1
+    - cca_t1 -> for CCA at time point 1
+    - kk_t2 -> for KK at time point 2
+    - etc.
+- preferably, all columns names should be in lowercase
+
+Assuming that all four tests are applied at four different measurement occasions, the names of the columns should look like:
+
+```{r}
+print(..VARS..)
+```
+
+Once the real data is in the expected format, the first pre-processing step consists of determining the cutoffs.
+To do this, we can use the function `apply.cutoff()` located at `./scripts/helpers/preprocessing.R` as:
+
+```{r}
+# Determine the cutoffs for the raw data.
+cutoff.data <- apply.cutoff(data.toy, trace = 0)
+
+# Print the data.
+print(cutoff.data)
+```
+
+The argument `trace` of `apply.cutoff()` indicates what cutoff value should be applied to the raw scores that were identified as *trace*.
+Currently, this argument only applies for the CCA test.
+
+The final step consists of using the cutoff values to create the pattern-count table.
+To do this, we use the function `count.patterns` located at `./scripts/helpers/preprocessing.R`.
+This function takes three arguments:
+
+1. the cutoff values determined above (i.e., `cutoff.data`)
+2. a specific time point for which to perform the count (e.g., time point one specified as `t1`)
+3. a specific ordering of the tests; this is needed later when taking into account the dependencies between each pair of tests (i.e, default ordering is KK, CCA, CAA, and PCR)
+
+The function `count.patterns` computes the frequencies taking into account each treatment group.
+It can be used as:
+
+```{r}
+# Compute frequencies.
+pattern.data <- count.patterns(cutoff.data, timepoint = "t1", tests.ordering = c("kk", "cca", "caa", "pcr"))
+
+# Inspect patterns.
+print(pattern.data)
+```
+
+In the example above:
+
+- the first four columns represent the tests, in the order indicated by the `tests.ordering` argument
+- the 16 rows indicate all possible combinations of response patterns
+- columns `g1_t1` and `g2_t1` hold the frequencies for each response pattern at time point one, for the first group (i.e., `g1`), and second group (i.e., `g2`) respectively
+- column `t1` indicates the frequency for each response pattern at time one, regardless of the treatment group
+
+Ultimately, the pattern-count table `pattern.data` is needed to run the analyses below.
 
 ### Statistical Models and Parameter Estimation
 
@@ -118,7 +205,7 @@ In the following, we will describe how to conduct a Latent Class Analysis for th
 - Model 4: Dependence between all tests, no treatment effect, specificity of 3 tests fixed to 1
 
 #### Model 1: No treatment effect, no test dependence
-Model 1 estimates test sensitivity and specificity based on the assumptions that tests are conditionally independent and that the prevalence does not differ between treatment groups. Note that the model requires the result pattern table to be in the order KK-CCA-CAA-PCR. Check with the structure of the simulated data (`sim`) when replacing the simulated data with the real data. 
+Model 1 estimates test sensitivity and specificity based on the assumptions that tests are conditionally independent and that the prevalence does not differ between treatment groups. Note that the model requires the result pattern table to be in the order KK-CCA-CAA-PCR. Check with the structure of the simulated data (`sim`) when replacing the simulated data with the real data.
 
 Model 1 with flat (uninformed) priors can be fitted using the following code:
 
@@ -209,7 +296,7 @@ The table shows for each parameter the mean (mu.vect), the standard deviation (s
 
 __Model 1 with informed priors__
 
-Model 1 with informed priors can be fitted using the same code as before, but replacing the `model.file` argument with `"./models/LCA_simple_informedPriors.txt"`. 
+Model 1 with informed priors can be fitted using the same code as before, but replacing the `model.file` argument with `"./models/LCA_simple_informedPriors.txt"`.
 
 #### Model 2: Treatment Effect Model
 
@@ -284,7 +371,7 @@ print(samples)
 
 __Model 2 with Informed Priors__
 
-Model 1 with informed priors can be fitted using the same code as before, but replacing the `model.file` argument with `"./models/LCA_simple_treatment_informedPriors.txt"`. 
+Model 1 with informed priors can be fitted using the same code as before, but replacing the `model.file` argument with `"./models/LCA_simple_treatment_informedPriors.txt"`.
 
 #### Model 3: Dependency between two tests
 
@@ -294,7 +381,7 @@ Model 3 allows for two tests being conditionally dependent. It always assumes th
 sim
 ```
 
-If you want to change the order of the tests in your result pattern table to allow different tests to be dependent, __USE THE FUNCTION MIHAI CREATED AS SHOWN BELOW__ . We recommend running Model 3 with all different combinations of tests (6 combinations overall) and check the robustness of sensitivity and specificity estimates to the test dependency.
+If you want to change the order of the tests in your result pattern table to allow different tests to be dependent, use the `count.patterns()` desribed above, specifying the appropriate ordering of the tests using the `test.ordering` argument . We recommend running Model 3 with all different combinations of tests (6 combinations overall) and check the robustness of sensitivity and specificity estimates to the test dependency.
 
 The model can be fitted using the following code:
 
@@ -376,34 +463,34 @@ counts <- sim[,5]
 n <- sum(counts)
 
 # define data object that is passed on to JAGS
-data <- list("counts", "n") 
+data <- list("counts", "n")
 
 # define starting values for chains
 myinits <-	list(
   list(theta1=0.9, theta2=0.6, theta4=0.5, theta5=0.5,
-       theta8=0.8, theta9=0.8, theta10=0.7, theta11=0.7, theta16=0.5, 
+       theta8=0.8, theta9=0.8, theta10=0.7, theta11=0.7, theta16=0.5,
        theta17=0.7, theta18=0.7, theta19=0.7, theta20=0.7, theta21=0.7,
        theta22=0.7, theta23=0.7, theta24=0.8),
   list(theta1=0.8, theta2=0.5, theta4=0.6, theta5=0.7,
-       theta8=0.5, theta9=0.6, theta10=0.7, theta11=0.7, theta16=0.5, 
+       theta8=0.5, theta9=0.6, theta10=0.7, theta11=0.7, theta16=0.5,
        theta17=0.9, theta18=0.8, theta19=0.6, theta20=0.5, theta21=0.5,
        theta22=0.9, theta23=0.7, theta24=0.9),
   list(theta1=0.7, theta2=0.7, theta4=0.7, theta5=0.4,
-       theta8=0.7, theta9=0.7, theta10=0.7, theta11=0.7, theta16=0.5, 
+       theta8=0.7, theta9=0.7, theta10=0.7, theta11=0.7, theta16=0.5,
        theta17=0.7, theta18=0.6, theta19=0.8, theta20=0.6, theta21=0.8,
        theta22=0.7, theta23=0.8, theta24=0.7),
   list(theta1=0.5, theta2=0.8, theta4=0.8, theta5=0.8,
-       theta8=0.7, theta9=0.5, theta10=0.5, theta11=0.5, theta16=0.5, 
+       theta8=0.7, theta9=0.5, theta10=0.5, theta11=0.5, theta16=0.5,
        theta17=0.5, theta18=0.5, theta19=0.5, theta20=0.5, theta21=0.5,
        theta22=0.5, theta23=0.5, theta24=0.5)
-) 
+)
 
 # parameters to be monitored
 parameters <- c("prev", "Se1", "Se2", "Se3", "Se4", "Sp4")
 
 # MCMC
 samples <- jags(data, inits=myinits, parameters,
-                model.file ="./models/LCA_dependent_Spec123Is1.txt", n.chains=4, n.iter=100000, 
+                model.file ="./models/LCA_dependent_Spec123Is1.txt", n.chains=4, n.iter=100000,
                 n.burnin=3000, n.thin=20, DIC=F)
 
 ```
