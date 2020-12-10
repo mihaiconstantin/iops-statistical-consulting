@@ -77,6 +77,19 @@ apply.cutoff <- function(raw.data, trace = 1) {
 
     return(data)
 }
+
+# Generate all possible patterns with a default test ordering.
+get.possible.patterns <- function() {
+    # Generate patterns.
+    patterns <- expand.grid(..CUTOFF.VALUES..)
+
+    # Sort patterns.
+    patterns <- patterns[with(patterns, order(kk, cca, caa, pcr, decreasing = TRUE)), ]
+
+    # Remove names.
+    rownames(patterns) <- NULL
+
+    return(patterns)
 }
 
 
