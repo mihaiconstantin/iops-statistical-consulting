@@ -92,19 +92,52 @@ get.possible.patterns <- function() {
     return(patterns)
 }
 
+# Count ocurring patterns.
+count.patterns <- function(cutoff.data, timepoint = "t1", tests.ordering = c("kk", "cca", "caa", "pcr")) {
+    # Generate patterns.
+    patterns <- get.possible.patterns()
 
-# Create matrix for storing the outcomes.
-outcomes <- matrix(NA, dim(data)[1], length(test.suite), dimnames = list(NULL, names(test.suite)))
+    # Create factors.
+    cutoff.data$group <- as.factor(cutoff.data$group)
 
-# Determine outcomes for all respondents.
-for (i in 1:dim(data)[1]) {
-    outcomes[i, ] <- determine.cutoff(data[i, ])
+    # Add a frequency column for current group and time point.
+    for (g in levels(cutoff.data$group)) {
+        # Indicate where to store the frequencies.
+        col <- paste0("g", g, "_", timepoint)
+
+        # Prepare pattern matrix for storing the frequencies.
+        patterns[, col] <- 0
+
+        # Get the data for the current group for the current time point.
+        data <- cutoff.data[with(cutoff.data, group == g), ][, grepl(paste0("id|", timepoint), colnames(cutoff.data))]
+
+        # Remove time point from columns.
+        colnames(data) <- sub(paste0("_", timepoint), "", colnames(data))
+
+        # Order tests the same way as the default ordering of the matrix of patterns.
+        data <- data[, c("id", "kk", "cca", "caa", "pcr")]
+
+        # Count patterns.
+        frequencies <- aggregate(id ~ ., data, length)
+
+        # Update the pattern matrix accordingly.
+        for (f in 1:nrow(frequencies)) {
+            for (p in 1:nrow(patterns)) {
+                if(all(patterns[p, 1:length(..TESTS..)] == frequencies[f, 1:length(..TESTS..)])) {
+                    patterns[p, col] <- frequencies[f, "id"]
+                }
+            }
+        }
+    }
+
+    # Add total frequencies per time point.
+    patterns[, timepoint] <- apply(patterns[, (ncol(patterns) - length(levels(cutoff.data$group)) + 1):ncol(patterns)], 1, sum)
+
+    # Apply specified ordering.
+    patterns <- patterns[, c(tests.ordering, colnames(patterns)[!colnames(patterns) %in% ..TESTS..])]
+
+    # Order based on the provided ordering.
+    patterns <- patterns[order(patterns[, tests.ordering[1]], patterns[, tests.ordering[2]], patterns[, tests.ordering[3]], patterns[, tests.ordering[4]], decreasing = TRUE), ]
+
+    return(patterns)
 }
-
-# Add id.
-outcomes <- cbind(id = data$repst.id, outcomes)
-
-# Aggregate.
-aggregate(id ~ ., outcomes, length)
-
-# List with all combinations
