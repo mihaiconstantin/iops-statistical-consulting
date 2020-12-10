@@ -103,7 +103,7 @@ install.packages("MCMCvis")
 For the analyses described below, we use pseudo-results based on simulated data. When simulated data is replaced with real study data, researchers should double-check that the structure of the data is the same. The simulation function can be loaded using the following code:
 
 ```{r results='hide', message=FALSE}
-source("./scripts/sim_LCAsimple.R")
+source("./scripts/helpers/simulating.R")
 ```
 
 All models require the data to be in form of a pattern-count table (see figure above). We provide a function that transfers raw data (individual values on each test for each participant) to the pattern-count table.
@@ -126,6 +126,7 @@ Model 1 with flat (uninformed) priors can be fitted using the following code:
 ```{r results='hide', message=FALSE}
 # open jags library
 library(R2jags)
+library(runjags)
 
 # define / read in data
 # NOTE: This is simulated data, replace with real data

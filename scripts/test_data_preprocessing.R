@@ -5,9 +5,10 @@ source("./scripts/helpers/helpers.R")
 load("./data/data_toy.RData")
 
 # Apply cutoffs.
-cutoff.data <- apply.cutoff(data.toy, trace = 0)
+# trace: Which value should the trace take in the dataset
+cutoff.data <- apply.cutoff(data.toy, trace = 1)
 
 # Determine frequencies.
-count.patterns(cutoff.data, timepoint = "t1", tests.ordering = c("kk", "cca", "caa", "pcr"))
+count.patterns(cutoff.data, timepoint = "t1", tests.ordering = c("cca", "kk", "caa", "pcr"))
 
 # TODO: Angelika, can you please check this?
