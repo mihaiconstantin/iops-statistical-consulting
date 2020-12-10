@@ -107,7 +107,7 @@ Such simulated data can be obtained using the function `sim.LCA()` located at `.
 To load this function you can source the file mentioned above as:
 
 ```{r results='hide', message=FALSE}
-# source("./scripts/sim_LCAsimple.R")
+source("./scripts/helpers/simulating.R")
 ```
 
 #### Using Real Data
@@ -126,10 +126,9 @@ You can load and inspect this toy data set using:
 
 ```{r}
 # Load the dataset.
-load("./data/data_toy.RData")
-
+data.toy <- read.csv("datatoy.csv")
 # View the dataset
-print(data.data.toy)
+print(data.toy)
 ```
 
 While you real data my contain many respondents, this toy data set only contains only 20 respondents.
@@ -150,14 +149,17 @@ This means that:
 Assuming that all four tests are applied at four different measurement occasions, the names of the columns should look like:
 
 ```{r}
-print(..VARS..)
+colnames(data.toy)
 ```
 
 Once the real data is in the expected format, the first pre-processing step consists of determining the cutoffs.
 To do this, we can use the function `apply.cutoff()` located at `./scripts/helpers/preprocessing.R` as:
 
 ```{r}
-# Determine the cutoffs for the raw data.
+source("./scripts/helpers/preprocessing.R")
+source("./scripts/helpers/constants.R")
+
+#Determine the cutoffs for the raw data.
 cutoff.data <- apply.cutoff(data.toy, trace = 0)
 
 # Print the data.
@@ -181,7 +183,7 @@ It can be used as:
 ```{r}
 # Compute frequencies.
 pattern.data <- count.patterns(cutoff.data, timepoint = "t1", tests.ordering = c("kk", "cca", "caa", "pcr"))
-
+# 
 # Inspect patterns.
 print(pattern.data)
 ```
