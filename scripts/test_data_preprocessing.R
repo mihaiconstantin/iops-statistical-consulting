@@ -2,13 +2,14 @@
 source("./scripts/helpers/helpers.R")
 
 # Load toy data.
-load("./data/data_toy.RData")
+data.toy <- read.csv("./data/data_toy.csv")
 
 # Apply cutoffs.
-# trace: Which value should the trace take in the dataset
+# trace means -> Which value should the trace take in the data set?
 cutoff.data <- apply.cutoff(data.toy, trace = 1)
+
+# Print.
+print(cutoff.data)
 
 # Determine frequencies.
 count.patterns(cutoff.data, timepoint = "t1", tests.ordering = c("cca", "kk", "caa", "pcr"))
-
-# TODO: Angelika, can you please check this?
