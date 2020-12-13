@@ -1,8 +1,11 @@
 ---
 title: 'IOPS - Statistical Consulting - Project #5'
-author: "Angelika M. Stefan, Mihai A. Constantin"
+author: "Angelika M. Stefan & Mihai A. Constantin"
 date: "12/8/2020"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
 ---
 
 ```{r setup, include=FALSE}
@@ -32,20 +35,26 @@ The goal of the current project is to assess the accuracy of each of the four te
 ### A Simple Model
 The goal of the study is to estimate the sensitivity and specificity of all four tests at each measurement occasion. We do this using Latent Class Analysis (LCA), a statistical modeling technique that can infer test sensitivity and specificity as well as disease prevalence from the test result patterns observed in the data. Below, we show a depiction of the simplest version of an LCA model (figure adapted from [Helman et al. (2019)](https://doi.org/10.1002/ece3.6448).
 
-![](../img/model_generic.jpg)
+<center>
+  ![](../img/model_generic.jpg)
+</center>
 
 The model starts by assuming that study participants can either be infected (with probability $\pi$ equivalent to the disease prevalence) or not infected (with probability $1-\pi$). For each test, the conditional probability to observe a positive test result if a person is infected, $\text{P(Positive} \mid \text{Infected})$, is equal to the sensitivity of the test. The conditional probability to observe a negative test result if a person is infected is equal to one minus the test sensitivity. If a person is healthy, the conditional probability of obtaining a negative result is equal to the specificity of the test and the probability to obtain a positive result is one minus the specificity, respectively.
 
 In the data, we can for each person observe a positive or a negative result on each test in the test set. This results in $2^k$ test patterns, where $k$ is the number of tests. For four tests, we can therefore observe 16 unique patterns of test results. The table below shows all test result patterns, coding a positive result as 1, and a negative result as 0. Note that the result patterns imply an ordering of tests: A pattern of 1000 indicates that a positive result was obtained in the first test, and negative results on test 2, 3, and 4. In the table, the test ordering is KK-CCA-CAA-PCR, such that a pattern of 1000 indicates a positive test result on KK, and negative test results on CCA, CAA, and PCR. The ordering of tests (i.e., columns in the table) is arbitrary, but should be kept in mind when interpreting the results of the LCA.
 
-![](../img/datatable_generic.png){width=33%}
+<center>
+  ![](../img/datatable_generic.png){width=33%}
+</center>
 
 For each of the patterns, we can count how many study participants followed the pattern. For example, in the table above, 9 participants showed the pattern 0001, that is, a positive result on PCR, and a negative result on all other tests. By combining this data table and the model described above, LCA can provide estimates for the test sensitivities and specificities, as well as for the prevalence.
 
 ### Model Extensions
 The model described above can be applied to all measurement occasions of the current study where all four diagnostic methods for *Schistosoma Mansoni* infections are applied, that is, the measurements obtained in week 2, 4, 6, and 8 of the study (see study design chart below). Note that the model should *not* be applied to the baseline measurement because here participant selection depended on test results in the KK and CCA method, hence the test result patterns are not indicative of the specificity and sensitivity of the tests. The study design as well as the characteristics of the test introduce additional complexity that should be taken into account when estimating the sensitivity and specificity of the tests. We will introduce these below.
 
-![](../img/studydesign.png){width=70%}
+<center>
+  ![](../img/studydesign.png){width=70%}
+</center>
 
 #### Trace Results
 In the CCA method, test results categorized as positive, negative, or trace results. The latter category contains results that are ambiguous with respect to the disease status. With LCA requiring dichotomous test outcomes, trace results need to be classified as positive or negative. Depending on this decision, the counts for obtained test patterns will change, and so will the estimates of test sensitivity and specificity. It is therefore sensible to repeat all analyses for trace-positive and trace-negative classifications to obtain an estimate for CCA test characteristics in both cases, and to check the robustness of other estimates towards the CAA result classification.
@@ -126,7 +135,7 @@ You can load and inspect this toy data set using:
 
 ```{r}
 # Load the dataset.
-data.toy <- read.csv("datatoy.csv")
+data.toy <- read.csv("./data/data_toy.csv")
 # View the dataset
 print(data.toy)
 ```
@@ -157,7 +166,6 @@ To do this, we can use the function `apply.cutoff()` located at `./scripts/helpe
 
 ```{r}
 source("./scripts/helpers/preprocessing.R")
-source("./scripts/helpers/constants.R")
 
 #Determine the cutoffs for the raw data.
 cutoff.data <- apply.cutoff(data.toy, trace = 0)
@@ -183,7 +191,7 @@ It can be used as:
 ```{r}
 # Compute frequencies.
 pattern.data <- count.patterns(cutoff.data, timepoint = "t1", tests.ordering = c("kk", "cca", "caa", "pcr"))
-# 
+#
 # Inspect patterns.
 print(pattern.data)
 ```
@@ -212,10 +220,9 @@ Model 1 estimates test sensitivity and specificity based on the assumptions that
 Model 1 with flat (uninformed) priors can be fitted using the following code:
 
 
-```{r results='hide', message=FALSE}
-# open jags library
-library(R2jags)
-library(runjags)
+```{r results='hide', message=FALSE, warning=FALSE}
+# Source helpers.
+source("./scripts/helpers/helpers.R")
 
 # define / read in data
 # NOTE: This is simulated data, replace with real data
@@ -303,11 +310,6 @@ Model 1 with informed priors can be fitted using the same code as before, but re
 #### Model 2: Treatment Effect Model
 
 Model 2 includes a parameter that accommodates the treatment effect, i.e, the two treatment groups are allowed to differ in this model. The data needs to be in the format of one result pattern table per group, using the same order of tests as before (KK-CCA-CAA-PCR). Double-check with the simulated data `group1sim` and `group2sim` whether the real data was preprocessed properly before running the analysis with the real data. The model can be fitted using the following code:
-
-```{r setup2, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir = '../')
-```
 
 ```{r results='hide', message=FALSE}
 # Source helpers.
