@@ -115,7 +115,7 @@ count.patterns <- function(cutoff.data, timepoint = "t1", tests.ordering = c("kk
         colnames(data) <- sub(paste0("_", timepoint), "", colnames(data))
 
         # Order tests the same way as the default ordering of the matrix of patterns.
-        data <- data[, c("id", "kk", "cca", "caa", "pcr")]
+        data <- data[, c("id", ..TESTS..)]
 
         # Count patterns.
         frequencies <- aggregate(id ~ ., data, length)
