@@ -25,7 +25,6 @@ library(MCMCvis)
 
 source(paste0(getwd(), "/scripts/helpers/", "plotting.R"))
 source(paste0(getwd(), "/scripts/helpers/", "preprocessing.R"))
-source(paste0(getwd(), "/scripts/helpers/", "constants.R"))
 source(paste0(getwd(), "/scripts/helpers/", "simulating.R"))
 
 # User feedback.
