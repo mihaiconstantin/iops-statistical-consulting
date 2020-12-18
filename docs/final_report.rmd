@@ -28,12 +28,12 @@ The department of parasitology at the Leiden University Medical Center developed
 Measurements based on stool samples were repeated during treatment weeks (weeks 0, 2, 4, 6). Measurements based on urine samples were repeated every week. It can be expected that the rate of true positive testing results decreases and the rate of true negative testing results increases due to the medication participants received.
 
 ## Research question
-The goal of the current project is to assess the accuracy of each of the four tests used in the clinical trial. The challenge is that none of the methods yields a perfect diagnosis. Therefore, the accuracy needs to be estimated from the data. In previous research, Latent Class Analysis has been used to answer this question.
+The goal of the current project is to assess the accuracy, i.e., the sensitivity and specificity, of each of the four tests used in the clinical trial. The challenge is that none of the methods yields a perfect diagnosis. Therefore, the accuracy needs to be estimated from the data.
 
 ## Estimating Test Sensitivity and Specificity through Latent Class Analysis
 
 ### A Simple Model
-The goal of the study is to estimate the sensitivity and specificity of all four tests at each measurement occasion. We do this using Latent Class Analysis (LCA), a statistical modeling technique that can infer test sensitivity and specificity as well as disease prevalence from the test result patterns observed in the data. Below, we show a depiction of the simplest version of an LCA model (figure adapted from [Helman et al. (2019)](https://doi.org/10.1002/ece3.6448).
+In line with previous research (e.g., Clements et al., 2018), we use Latent Class Analysis (LCA), to answer the research question. LCA is a statistical modeling technique that can infer test sensitivity and specificity as well as disease prevalence from the test result patterns observed in the data. Below, we show a depiction of the simplest version of an LCA model (figure adapted from [Helman et al. (2019)](https://doi.org/10.1002/ece3.6448).
 
 <center>
   ![](../img/model_generic.jpg)
@@ -41,13 +41,13 @@ The goal of the study is to estimate the sensitivity and specificity of all four
 
 The model starts by assuming that study participants can either be infected (with probability $\pi$ equivalent to the disease prevalence) or not infected (with probability $1-\pi$). For each test, the conditional probability to observe a positive test result if a person is infected, $\text{P(Positive} \mid \text{Infected})$, is equal to the sensitivity of the test. The conditional probability to observe a negative test result if a person is infected is equal to one minus the test sensitivity. If a person is healthy, the conditional probability of obtaining a negative result is equal to the specificity of the test and the probability to obtain a positive result is one minus the specificity, respectively.
 
-In the data, we can for each person observe a positive or a negative result on each test in the test set. This results in $2^k$ test patterns, where $k$ is the number of tests. For four tests, we can therefore observe 16 unique patterns of test results. The table below shows all test result patterns, coding a positive result as 1, and a negative result as 0. Note that the result patterns imply an ordering of tests: A pattern of 1000 indicates that a positive result was obtained in the first test, and negative results on test 2, 3, and 4. In the table, the test ordering is KK-CCA-CAA-PCR, such that a pattern of 1000 indicates a positive test result on KK, and negative test results on CCA, CAA, and PCR. The ordering of tests (i.e., columns in the table) is arbitrary, but should be kept in mind when interpreting the results of the LCA.
+For each person, we may observe a positive or a negative result on each test in the test set. This results in $2^k$ test patterns, where $k$ is the number of tests. For four tests, we can therefore observe 16 unique patterns of test results. The table below shows all test result patterns, coding a positive result as 1, and a negative result as 0. Note that the result patterns imply an ordering of tests: A pattern of 1000 indicates that a positive result was obtained in the first test, and negative results on test 2, 3, and 4. In the table, the test ordering is KK-CCA-CAA-PCR, such that a pattern of 1000 indicates a positive test result on KK, and negative test results on CCA, CAA, and PCR. The ordering of tests (i.e., columns in the table) is arbitrary, but should be kept in mind when interpreting the results of the LCA.
 
 <center>
   ![](../img/datatable_generic.png){width=33%}
 </center>
 
-For each of the patterns, we can count how many study participants followed the pattern. For example, in the table above, 9 participants showed the pattern 0001, that is, a positive result on PCR, and a negative result on all other tests. By combining this data table and the model described above, LCA can provide estimates for the test sensitivities and specificities, as well as for the prevalence.
+For each of the possible patterns, also called "row profiles", we can count how many study participants followed the pattern in our dataset. For example, in the table above, 9 participants showed the pattern 0001, that is, a positive result on PCR, and a negative result on all other tests. By combining this data table and the model described above, LCA can provide estimates for the test sensitivities and specificities, as well as for the prevalence.
 
 ### Model Extensions
 The model described above can be applied to all measurement occasions of the current study where all four diagnostic methods for *Schistosoma Mansoni* infections are applied, that is, the measurements obtained in week 2, 4, 6, and 8 of the study (see study design chart below). Note that the model should *not* be applied to the baseline measurement because here participant selection depended on test results in the KK and CCA method, hence the test result patterns are not indicative of the specificity and sensitivity of the tests. The study design as well as the characteristics of the test introduce additional complexity that should be taken into account when estimating the sensitivity and specificity of the tests. We will introduce these below.
@@ -57,15 +57,15 @@ The model described above can be applied to all measurement occasions of the cur
 </center>
 
 #### Trace Results
-In the CCA method, test results categorized as positive, negative, or trace results. The latter category contains results that are ambiguous with respect to the disease status. With LCA requiring dichotomous test outcomes, trace results need to be classified as positive or negative. Depending on this decision, the counts for obtained test patterns will change, and so will the estimates of test sensitivity and specificity. It is therefore sensible to repeat all analyses for trace-positive and trace-negative classifications to obtain an estimate for CCA test characteristics in both cases, and to check the robustness of other estimates towards the CAA result classification.
+In the CCA method, test results are categorized as positive, negative, or trace results. The latter category contains results that are ambiguous with respect to the disease status. With LCA requiring dichotomous test outcomes, trace results need to be classified as either positive or negative. Depending on this decision, the counts for obtained test patterns will change, and so will the estimates of test sensitivity and specificity. It is therefore sensible to conduct all analyses twice: once for a trace-positive classification (i.e., trace results are considered positive test outcomes), and once for a trace-negative classification (i.e., trace results are considered negative test outcomes). In this way, estimates for CCA test characteristics can be obtained for both cases, and the robustness of other estimates towards the CCA result classification can be checked.
 
 #### Treatment Group
 In the current research design, participants are randomly assigned to one out of two treatment groups. They either obtain one dose of praziquantel at baseline or four doses at two-week intervals. According to the study protocol registration ([Hoekstra et al., 2018](https://doi.org/10.1186/s12879-018-3554-2)), it can be expected that the cure rate in the multiple dose regimen is higher than the cure rate in the single dose regimen. Therefore, it can be expected that the disease prevalence in the multiple dose regimen group is lower than in the single dose regimen. The difference in prevalence between treatment groups can be introduced as a parameter into the LCA model.
 
 #### Dependence Between Tests
-The simple model is based on the assumption of *conditional independence*. This means that the probability to obtain a certain test result pattern, say, 1100, is only dependent on the prevalence, as well as on the sensitivity and specificity of the tests. In other words, if we know that a person obtained a positive result in test 1, this does not give us any additional information about their probability to obtain a positive result in test 2. However, in practice, this is a strong assumption that might not hold in practice.
+The simple model is based on the assumption of *conditional independence*. This means that the probability to obtain a certain test result pattern, say, 1100, is only dependent on the prevalence, as well as on the sensitivity and specificity of the tests. In other words, if we know that a person obtained a positive result in test 1, this does not give us any additional information about their probability to obtain a positive result in test 2. However, this is a strong assumption that might not hold in practice.
 
-Let us imagine for a second that the first two tests are identical, i.e., the results of the first test for each individual were copied to obtain the result of test 2. Then a positive result in the first test would perfectly predict a positive result in the second test, no matter what the underlying test sensitivity or specificity of test are. Of course, in practice, nobody would copy test results. However, two tests can similar to one another independent of their sensitivity and specificity. For example, two tests might be based on a similar procedure due to which participants who had an infection in the past are more likely to obtain positive results on the present test independent of their present disease status. For any participant who had been infected in the past, these two tests will have more similar results than either of the two tests and a third test that is not influenced by past disease status.
+Let us imagine that the first two tests are identical, i.e., the results of the first test for each individual were copied to obtain the result of test 2. Then a positive result in the first test would perfectly predict a positive result in the second test, no matter what the underlying test sensitivity or specificity of test are. Of course, in practice, nobody would copy test results. However, two tests can similar to one another independent of their sensitivity and specificity. For example, antigen tests might be more likely to classify participants as infected who were infected in the past, independent of their current disease status. On the other hand, microscopy methods might not be influenced by the past disease status of a participant. Therefore, it can be assumed that two antigen-based methods yield more similar results than an antigen-based method and a microscopy-based method. This dependency can be represented in the statistical model by adding parameters for test dependence.
 
 In mathematical terms, conditional (in)dependence can be described in terms of (non-)equivalence of conditional probabilities. If conditional independence holds,
 
@@ -76,7 +76,7 @@ $$
 \text{P(Negative Test 2} \mid \text{Healthy} \cap \text{Positive Test 1}) = \text{P(Negative Test 2} \mid \text{Healthy} \cap \text{Negative Test 1})
 $$
 
-If tests are conditional dependent, but this is not accounted for in the statistical model, the estimates of sensitivity and specificity can be biased (see also: [Gardner et al., 2000](https://doi.org/10.1016/S0167-5877(00)00119-7), [Berkvens et al. 2006](https://doi.org/10.1097/01.ede.0000198422.64801.8d)). However, introducing parameters for conditional dependence among all tests renders the model unidentifiable because there are too many parameters and too few degrees of freedom. For example, for four tests, there are 31 parameters that need to be estimated if we allow for dependence between all tests, but there are only 15 degrees of freedom in the data (16 counts for different patterns, but we know the final count if we know the first 15). Therefore, if we want to allow for dependence between the tests, we need to impose additional constraints on the model. For example, we can set the specificity of some of the tests to one or only allow for dependence between two models.
+If tests are conditional dependent, but this is not accounted for in the statistical model, the estimates of sensitivity and specificity can be biased (see also: [Gardner et al., 2000](https://doi.org/10.1016/S0167-5877(00)00119-7), [Berkvens et al. 2006](https://doi.org/10.1097/01.ede.0000198422.64801.8d)). However, introducing parameters for conditional dependence among all tests renders the model unidentifiable because there are too many parameters and too few degrees of freedom. For example, for four tests, there are 31 parameters that need to be estimated if we allow for dependence between all tests, but there are only 15 degrees of freedom in the data (16 counts for different patterns, but we know the final count if we know the first 15). Therefore, if we want to allow for dependence between the tests, we need to impose additional constraints on the model. For example, we can set the specificity of some of the tests to one (this is what we propose in Model 4) or only allow for dependence between two models (this is what we propose in Model 3).
 
 ## Statistical Analyses
 
@@ -140,7 +140,7 @@ data.toy <- read.csv("./data/data_toy.csv")
 print(data.toy)
 ```
 
-While you real data my contain many respondents, this toy data set only contains only 20 respondents.
+Your real data may contain many respondents, but this toy data set only contains 20 respondents.
 However, it is very important that your real data set follows the same structure as this toy data set.
 This means that:
 
@@ -277,7 +277,7 @@ samples$BUGSoutput$summary[,"Rhat"]
 
 __What to do in case of convergence issues?__
 
-If there are convergence issues, there are a couple of actions that can help to improve convergence. First, if you see that right side of the traceplot looks good, but the left side not, you can discard more samples from the start. This can be done using the `n.burnin` argument in the `jags()` function. For example, you could increase n.burnin from 2000 to 3000 in this case. Second, if there is autocorrelation throughout the chain, you can only look at every second, third, forth, etc. sampled parameter value. This can be done using the `n.thin` command in the `jags()` function. For example, if `n.thin=10`, the algorithm only uses every tenth sample. Note that both of these actions decrease the number of used samples from which you infer the posterior distribution, so if you increase n.burnin or n.thin, it might be necessary to also increase the parameter `n.iter`, i.e., the overall number of samples drawn. The third action you can take is to adjust the starting values to parameters that are more plausible. However, this requires some knowledge about the posterior distribution and should therefore be done only with care. If nothing helps and the R-hat value for a parameter is still larger than 1.05, the posterior estimates for this parameter should not be interpreted.
+If there are convergence issues, there are a couple of actions that can help to improve convergence. First, if you see that right side of the trace plot looks good, but the left side not, you can discard more samples from the start. This can be done using the `n.burnin` argument in the `jags()` function. For example, you could increase n.burnin from 2000 to 3000 in this case. Second, if there is autocorrelation throughout the chain, you can only look at every second, third, forth, etc. sampled parameter value. This can be done using the `n.thin` command in the `jags()` function. For example, if `n.thin=10`, the algorithm only uses every tenth sample. Note that both of these actions decrease the number of used samples from which you infer the posterior distribution, so if you increase n.burnin or n.thin, it might be necessary to also increase the parameter `n.iter`, i.e., the overall number of samples drawn. The third action you can take is to adjust the starting values to parameters that are more plausible. However, this requires some knowledge about the posterior distribution and should therefore be done only with care. If nothing helps and the R-hat value for a parameter is still larger than 1.05, the posterior estimates for this parameter should not be interpreted.
 
 __Obtaining Parameter Estimates from the Posterior Distribution__
 
@@ -287,13 +287,13 @@ In Bayesian statistical models, all information about the parameter estimates is
 MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
 ```
 
-We can see one posterior distribution for each parameter. Looking at the posterior distributions gives us an idea about the (a)symmetry of the distribution and about good ways to summarize the posterior. For example, an often-reported value is the mean of the posterior distribution, but for a highly asymmetric distribution it might also be relevant to report the median or mode.
+We can see one posterior distribution for each parameter. Looking at the posterior distributions gives us an idea about the (a)symmetry of the distribution and about good ways to summarize the posterior. For example, an often-reported value is the mean of the posterior distribution, but for a highly asymmetric distribution it might also be relevant to report the median or mode. For example, for the posterior distributions above, the mean of the posterior distribution is a better representation for the sensitivity parameters, while the median of the posterior distribution is a better representation for the specificity parameters, since the posterior distributions of the specificity parameters have a strong negative skew.
 
 ```{r}
 MCMCplot(samples)
 ```
 
-The next plot (see above) shows the posterior means and 95\% credible intervals for each parameter. The width of the credible interval indicates the uncertainty about the paramter estimate.
+The next plot (see above) shows the posterior means and 95\% credible intervals for each parameter. The width of the credible interval indicates the uncertainty about the parameter estimate.
 
 Finally, we can take a look at a table that summarizes the characteristics of the posterior distributions:
 
@@ -301,7 +301,7 @@ Finally, we can take a look at a table that summarizes the characteristics of th
 print(samples)
 ```
 
-The table shows for each parameter the mean (mu.vect), the standard deviation (sd.vect), as well as five quantiles of the posterior distribution. It also contains the R-hat value and an effective sample size for convergence diagnostics (this is related to the samples from the posterior distribution, *not* the number of participants in the study).
+The table shows for each parameter the mean (mu.vect), the standard deviation (sd.vect), as well as five quantiles of the posterior distribution. It also contains the R-hat value and an effective sample size for convergence diagnostics (this is related to the samples from the posterior distribution, *not* the number of participants in the study). The effective sample size measure reported in the table also refers to the number of samples from the posterior distribution, and is a measure of convergence closely related to the trace plots. If there is little autocorrelation in the samples (as it should be), the trace plots look like a hairy caterpillar, and the effective sample size reported in this table close to the actual number of samples drawn from the posterior distribution. 
 
 __Model 1 with informed priors__
 
@@ -311,7 +311,7 @@ Model 1 with informed priors can be fitted using the same code as before, but re
 
 Model 2 includes a parameter that accommodates the treatment effect, i.e, the two treatment groups are allowed to differ in this model. The data needs to be in the format of one result pattern table per group, using the same order of tests as before (KK-CCA-CAA-PCR). Double-check with the simulated data `group1sim` and `group2sim` whether the real data was preprocessed properly before running the analysis with the real data. The model can be fitted using the following code:
 
-```{r results='hide', message=FALSE}
+```{r eval=FALSE}
 # Source helpers.
 source("./scripts/helpers/helpers.R")
 
@@ -358,7 +358,7 @@ __Convergence Diagnostics__
 
 Convergence diagnostics for Model 2 can be determined using the code below. Please refer to the convergence diagnostics section of Model 1 for an interpretation of the output.
 
-```{r}
+```{r eval=FALSE}
 MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
 samples$BUGSoutput$summary[,"Rhat"]
 ```
@@ -367,7 +367,7 @@ __Obtaining Parameter Estimates from the Posterior Distribution__
 
 Parameter estimates from the posterior distribution can be obtained using the code below. Please refer to the parallel section of Model 1 for an interpretation of the output.
 
-```{r}
+```{r eval=FALSE}
 MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
 MCMCplot(samples)
 print(samples)
@@ -385,11 +385,11 @@ Model 3 allows for two tests being conditionally dependent. It always assumes th
 sim
 ```
 
-If you want to change the order of the tests in your result pattern table to allow different tests to be dependent, use the `count.patterns()` desribed above, specifying the appropriate ordering of the tests using the `test.ordering` argument . We recommend running Model 3 with all different combinations of tests (6 combinations overall) and check the robustness of sensitivity and specificity estimates to the test dependency.
+If you want to change the order of the tests in your result pattern table to allow different tests to be dependent, use the `count.patterns()` function described above, specifying the appropriate ordering of the tests using the `test.ordering` argument. We recommend running Model 3 with all different combinations of tests (6 combinations overall), such that each time to different tests are assumed to be dependent, and check the robustness of sensitivity and specificity estimates to the test dependency.
 
 The model can be fitted using the following code:
 
-```{r results='hide', message=FALSE}
+```{r eval=FALSE}
 # Source helpers.
 source("./scripts/helpers/helpers.R")
 
@@ -433,7 +433,7 @@ __Convergence Diagnostics__
 
 Convergence diagnostics for Model 3 can be determined using the code below. Please refer to the convergence diagnostics section of Model 1 for an interpretation of the output.
 
-```{r}
+```{r eval=FALSE}
 MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
 samples$BUGSoutput$summary[,"Rhat"]
 ```
@@ -442,7 +442,7 @@ __Obtaining Parameter Estimates from the Posterior Distribution__
 
 Parameter estimates from the posterior distribution can be obtained using the code below. Please refer to the parallel section of Model 1 for an interpretation of the output.
 
-```{r}
+```{r eval=FALSE}
 MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
 MCMCplot(samples)
 print(samples)
@@ -454,7 +454,7 @@ Model 4 allows for conditional dependence between all tests. To make this model 
 
 The interpretation of parameters in Model 4 is analogue to Model 3, and a list of all model parameters can be found in the document "./docs/ParameterOverview.pdf". Model 4 can be fitted using the following code:
 
-```{r results='hide', message=FALSE}
+```{r eval=FALSE}
 # Source helpers.
 source("./scripts/helpers/helpers.R")
 
@@ -503,7 +503,7 @@ __Convergence Diagnostics__
 
 Convergence diagnostics for Model 4 can be determined using the code below. Please refer to the convergence diagnostics section of Model 1 for an interpretation of the output.
 
-```{r}
+```{r eval=FALSE}
 MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
 samples$BUGSoutput$summary[,"Rhat"]
 ```
@@ -512,9 +512,16 @@ __Obtaining Parameter Estimates from the Posterior Distribution__
 
 Parameter estimates from the posterior distribution can be obtained using the code below. Please refer to the parallel section of Model 1 for an interpretation of the output.
 
-```{r}
+```{r eval=FALSE}
 MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
 MCMCplot(samples)
 print(samples)
 ```
+
+### Recommendations for Reporting and Conclusions
+Fitting all of the statistical models described above will yield a large number of estimates for the sensitivity and specificity of each test for each measurement occasion. For reporting the results, we recommend focusing on one of the models that seems most realistic from a substantive point of view. Results of the other models can be reported as robustness analyses in an appendix. The article by Clements et al. (2018) provides a good example for reporting the results of multiple analyses in a concise manner. Since the focus of the study is on parameter estimation for test sensitivity and specificity, we recommend to report measures of uncertainty for the estimates. In Bayesian modeling, this can be done using credible intervals, i.e., the range of parameter values covering 95\% of the posterior distribution. These can be obtained from the results tables using the 2.5\% and 97.5\% quantile of the posterior distribution.
+
+Although not the main focus of this study, the proposed analyses also allow preliminary conclusions about the treatment effectiveness. Since prevalence is assessed at each measurement occasion, it is possible to monitor prevalence estimates over the course of time, and descriptively check whether there is a decrease in prevalence. Note, however, that our models do not account for dependency of single data points due to repeated measurements. This means that the models do not "know" that the participants in the samples at different measurement occasions are the same. Therefore, observed trends in prevalence should be taken with a grain of salt.
+
+
 
