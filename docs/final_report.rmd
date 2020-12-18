@@ -3,7 +3,7 @@ title: 'IOPS - Statistical Consulting - Project #5'
 author: "Angelika M. Stefan & Mihai A. Constantin"
 date: "12/8/2020"
 output:
-  html_document:
+  pdf_document:
     toc: true
     toc_depth: 4
 ---
@@ -36,24 +36,24 @@ The goal of the current project is to assess the accuracy, i.e., the sensitivity
 In line with previous research (e.g., Clements et al., 2018), we use Latent Class Analysis (LCA), to answer the research question. LCA is a statistical modeling technique that can infer test sensitivity and specificity as well as disease prevalence from the test result patterns observed in the data. Below, we show a depiction of the simplest version of an LCA model (figure adapted from [Helman et al. (2019)](https://doi.org/10.1002/ece3.6448).
 
 <center>
-  ![](../img/model_generic.jpg)
+    ![](../img/model_generic.jpg){width=60%}
 </center>
 
-The model starts by assuming that study participants can either be infected (with probability $\pi$ equivalent to the disease prevalence) or not infected (with probability $1-\pi$). For each test, the conditional probability to observe a positive test result if a person is infected, $\text{P(Positive} \mid \text{Infected})$, is equal to the sensitivity of the test. The conditional probability to observe a negative test result if a person is infected is equal to one minus the test sensitivity. If a person is healthy, the conditional probability of obtaining a negative result is equal to the specificity of the test and the probability to obtain a positive result is one minus the specificity, respectively.
+The model starts by assuming that study participants can either be infected (with probability $\pi$ equivalent to the disease prevalence) or not infected (with probability $1-\pi$). For each test, the conditional probability to observe a positive test result if a person is infected, $\text{P(Positive} \mid \text{Infected})$, is equal to the sensitivity of the test. The conditional probability to observe a negative test result if a person is infected is equal to one minus the test sensitivity. If a person is healthy, the conditional probability of obtaining a negative result is equal to the specificity of the test, and the probability to obtain a positive result is one minus the specificity, respectively.
 
-For each person, we may observe a positive or a negative result on each test in the test set. This results in $2^k$ test patterns, where $k$ is the number of tests. For four tests, we can therefore observe 16 unique patterns of test results. The table below shows all test result patterns, coding a positive result as 1, and a negative result as 0. Note that the result patterns imply an ordering of tests: A pattern of 1000 indicates that a positive result was obtained in the first test, and negative results on test 2, 3, and 4. In the table, the test ordering is KK-CCA-CAA-PCR, such that a pattern of 1000 indicates a positive test result on KK, and negative test results on CCA, CAA, and PCR. The ordering of tests (i.e., columns in the table) is arbitrary, but should be kept in mind when interpreting the results of the LCA.
+For each person, we may observe a positive or a negative result on each test in the test set. This results in $2^k$ test patterns, where $k$ is the number of tests. For four tests, we can therefore observe 16 unique patterns of test results. The table below shows all test result patterns, coding a positive result as 1, and a negative result as 0. Note that the result patterns imply an ordering of tests: A pattern of `1000` indicates that a positive result was obtained in the first test, and negative results on test 2, 3, and 4. In the table, the test ordering is KK-CCA-CAA-PCR, such that a pattern of `1000` indicates a positive test result on KK, and negative test results on CCA, CAA, and PCR. The ordering of tests (i.e., columns in the table) is arbitrary, but should be kept in mind when interpreting the results of the LCA.
 
 <center>
-  ![](../img/datatable_generic.png){width=33%}
+    ![](../img/datatable_generic.png){width=40%}
 </center>
 
-For each of the possible patterns, also called "row profiles", we can count how many study participants followed the pattern in our dataset. For example, in the table above, 9 participants showed the pattern 0001, that is, a positive result on PCR, and a negative result on all other tests. By combining this data table and the model described above, LCA can provide estimates for the test sensitivities and specificities, as well as for the prevalence.
+For each of the possible patterns, also called *row profiles*, we can count how many study participants followed the pattern in our dataset. For example, in the table above, nine participants showed the pattern `0001`, that is, a positive result on PCR, and a negative result on all other tests. By combining this data table and the model described above, LCA can provide estimates for the test sensitivities and specificities, as well as for the prevalence.
 
 ### Model Extensions
 The model described above can be applied to all measurement occasions of the current study where all four diagnostic methods for *Schistosoma Mansoni* infections are applied, that is, the measurements obtained in week 2, 4, 6, and 8 of the study (see study design chart below). Note that the model should *not* be applied to the baseline measurement because here participant selection depended on test results in the KK and CCA method, hence the test result patterns are not indicative of the specificity and sensitivity of the tests. The study design as well as the characteristics of the test introduce additional complexity that should be taken into account when estimating the sensitivity and specificity of the tests. We will introduce these below.
 
 <center>
-  ![](../img/studydesign.png){width=70%}
+    ![](../img/studydesign.png){width=70%}
 </center>
 
 #### Trace Results
@@ -63,15 +63,16 @@ In the CCA method, test results are categorized as positive, negative, or trace 
 In the current research design, participants are randomly assigned to one out of two treatment groups. They either obtain one dose of praziquantel at baseline or four doses at two-week intervals. According to the study protocol registration ([Hoekstra et al., 2018](https://doi.org/10.1186/s12879-018-3554-2)), it can be expected that the cure rate in the multiple dose regimen is higher than the cure rate in the single dose regimen. Therefore, it can be expected that the disease prevalence in the multiple dose regimen group is lower than in the single dose regimen. The difference in prevalence between treatment groups can be introduced as a parameter into the LCA model.
 
 #### Dependence Between Tests
-The simple model is based on the assumption of *conditional independence*. This means that the probability to obtain a certain test result pattern, say, 1100, is only dependent on the prevalence, as well as on the sensitivity and specificity of the tests. In other words, if we know that a person obtained a positive result in test 1, this does not give us any additional information about their probability to obtain a positive result in test 2. However, this is a strong assumption that might not hold in practice.
+The simple model is based on the assumption of *conditional independence*. This means that the probability to obtain a certain test result pattern, say, `1100`, is only dependent on the prevalence, as well as on the sensitivity and specificity of the tests. In other words, if we know that a person obtained a positive result in test 1, this does not give us any additional information about their probability to obtain a positive result in test 2. However, this is a strong assumption that might not hold in practice.
 
-Let us imagine that the first two tests are identical, i.e., the results of the first test for each individual were copied to obtain the result of test 2. Then a positive result in the first test would perfectly predict a positive result in the second test, no matter what the underlying test sensitivity or specificity of test are. Of course, in practice, nobody would copy test results. However, two tests can similar to one another independent of their sensitivity and specificity. For example, antigen tests might be more likely to classify participants as infected who were infected in the past, independent of their current disease status. On the other hand, microscopy methods might not be influenced by the past disease status of a participant. Therefore, it can be assumed that two antigen-based methods yield more similar results than an antigen-based method and a microscopy-based method. This dependency can be represented in the statistical model by adding parameters for test dependence.
+Let us imagine that the first two tests are identical, i.e., the results of the first test for each individual were copied to obtain the result of test 2. Then, a positive result in the first test would perfectly predict a positive result in the second test, no matter what the underlying test sensitivity or specificity of test are. Of course, in practice, nobody would copy test results. However, two tests can similar to one another independent of their sensitivity and specificity. For example, antigen tests might be more likely to classify participants as infected who were infected in the past, independent of their current disease status. On the other hand, microscopy methods might not be influenced by the past disease status of a participant. Therefore, it can be assumed that two antigen-based methods yield more similar results than an antigen-based method and a microscopy-based method. This dependency can be represented in the statistical model by adding parameters for test dependence.
 
 In mathematical terms, conditional (in)dependence can be described in terms of (non-)equivalence of conditional probabilities. If conditional independence holds,
 
 $$
 \text{P(Positive Test 2} \mid \text{Infected} \cap \text{Positive Test 1}) = \text{P(Positive Test 2} \mid \text{Infected} \cap \text{Negative Test 1})
 $$
+
 $$
 \text{P(Negative Test 2} \mid \text{Healthy} \cap \text{Positive Test 1}) = \text{P(Negative Test 2} \mid \text{Healthy} \cap \text{Negative Test 1})
 $$
@@ -95,12 +96,15 @@ The uncertainty about a parameter value *before* seeing the data is represented 
 - SpCAA ~ dbeta(21.2, 2.06) (this prior is based on private conversation with P. Hoekstra)
 - SpPCR ~ dbeta(21.2, 2.06) (this prior is based on private conversation with P. Hoekstra)
 
-![](../img/informed_priors.jpg)
+<center>
+    ![](../img/informed_priors.jpg)
+</center>
 
 ### Data Preparation
 
 #### Required R-Packages
-To conduct the analyses, you will need to install several R-packages. This can be done using the following code:
+To conduct the analyses, you need to install several R-packages.
+This can be done using the following code:
 
 ```{r eval=FALSE, results='hide'}
 install.packages("R2jags")
@@ -129,13 +133,14 @@ However, when using real data, there are a few pre-processing steps that are req
 2. convert the data from raw test scores to cutoff values
 3. use the cutoff values to create the pattern-count table
 
-We provide two functions for performing the data pre-processing required to run the analyses.
+We provide two functions for performing the data pre-processing steps required to run the analyses.
 To illustrate how these functions work, we use a toy data set containing 20 respondents and four tests (i.e., KK, CCA, CAA, and PCR) at four time points (i.e., week 1, 2, 3, and 4).
 You can load and inspect this toy data set using:
 
 ```{r}
 # Load the dataset.
 data.toy <- read.csv("./data/data_toy.csv")
+
 # View the dataset
 print(data.toy)
 ```
@@ -144,15 +149,15 @@ Your real data may contain many respondents, but this toy data set only contains
 However, it is very important that your real data set follows the same structure as this toy data set.
 This means that:
 
-- the first two columns should contain the ID and the group variables
+- the first two columns should contain the `id` and the `group` variables
 - each next four columns should contain the four tests at a specific time point 1 (e.g., KK, CCA, CAA, and PCR at time point 1)
 - the ordering of the tests should be the same across all time points (i.e., preferably KK, CCA, CAA, and PCR)
-- the first two columns should be named "id" and "group"
+- the first two columns should be named `id` and `group`
 - the remainder of the columns should be named using the following pattern: "test_timepoint", e.g.:
     - kk_t1 -> for KK at time point 1
     - cca_t1 -> for CCA at time point 1
     - kk_t2 -> for KK at time point 2
-    - etc.
+    - and so on...
 - preferably, all columns names should be in lowercase
 
 Assuming that all four tests are applied at four different measurement occasions, the names of the columns should look like:
@@ -167,7 +172,7 @@ To do this, we can use the function `apply.cutoff()` located at `./scripts/helpe
 ```{r}
 source("./scripts/helpers/preprocessing.R")
 
-#Determine the cutoffs for the raw data.
+# Determine the cutoffs for the raw data.
 cutoff.data <- apply.cutoff(data.toy, trace = 0)
 
 # Print the data.
@@ -178,20 +183,20 @@ The argument `trace` of `apply.cutoff()` indicates what cutoff value should be a
 Currently, this argument only applies for the CCA test.
 
 The final step consists of using the cutoff values to create the pattern-count table.
-To do this, we use the function `count.patterns` located at `./scripts/helpers/preprocessing.R`.
+To do this, we use the function `count.patterns()` located at `./scripts/helpers/preprocessing.R`.
 This function takes three arguments:
 
-1. the cutoff values determined above (i.e., `cutoff.data`)
+1. the cutoff values determined above (i.e., `cutoff.data()`)
 2. a specific time point for which to perform the count (e.g., time point one specified as `t1`)
 3. a specific ordering of the tests; this is needed later when taking into account the dependencies between each pair of tests (i.e, default ordering is KK, CCA, CAA, and PCR)
 
-The function `count.patterns` computes the frequencies taking into account each treatment group.
+The function `count.patterns()` computes the frequencies taking into account each treatment group.
 It can be used as:
 
 ```{r}
 # Compute frequencies.
 pattern.data <- count.patterns(cutoff.data, timepoint = "t1", tests.ordering = c("kk", "cca", "caa", "pcr"))
-#
+
 # Inspect patterns.
 print(pattern.data)
 ```
@@ -201,9 +206,9 @@ In the example above:
 - the first four columns represent the tests, in the order indicated by the `tests.ordering` argument
 - the 16 rows indicate all possible combinations of response patterns
 - columns `g1_t1` and `g2_t1` hold the frequencies for each response pattern at time point one, for the first group (i.e., `g1`), and second group (i.e., `g2`) respectively
-- column `t1` indicates the frequency for each response pattern at time one, regardless of the treatment group
+- column `t1` indicates the frequency for each response pattern at time point one, regardless of the treatment group
 
-Ultimately, the pattern-count table `pattern.data` is needed to run the analyses below.
+Ultimately, the pattern-count table (e.g., `pattern.data`) is needed to run the analyses below.
 
 ### Statistical Models and Parameter Estimation
 
@@ -224,18 +229,22 @@ Model 1 with flat (uninformed) priors can be fitted using the following code:
 # Source helpers.
 source("./scripts/helpers/helpers.R")
 
-# define / read in data
-# NOTE: This is simulated data, replace with real data
+# Note.
+# The object `sim` below contains simulated data.
+# Please replace it with your own data.
+
+# This is simulated data.
 sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
                SpKK = 0.95, SpCCA = 0.95, SpCAA = 0.95, SpPCR = 0.95,
                prev = 0.9, n = 350)
+
 counts <- sim[,5]
 n <- sum(counts)
 
-# define data object that is passed on to JAGS
+# Define data object that is passed on to JAGS.
 data <- list("counts", "n")
 
-# define starting values
+# Define starting values.
 myinits <-	list(
   list(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
        SpKK = 0.8, SpCCA = 0.8, SpCAA = 0.8, SpPCR = 0.8, prev=0.9),
@@ -247,15 +256,14 @@ myinits <-	list(
        SpKK = 0.8, SpCCA = 0.8, SpCAA = 0.8, SpPCR = 0.8, prev=0.9)
 )
 
-# parameters to be monitored
+# Parameters to be monitored.
 parameters <- c("SeKK", "SeCCA", "SeCAA", "SePCR",
                 "SpKK", "SpCCA", "SpCAA", "SpPCR", "prev")
 
-# MCMC
+# MCMC.
 samples <- jags(data, inits=myinits, parameters,
                 model.file ="./models/LCA_simple_flatPriors.txt", n.chains=4, n.iter=10000,
                 n.burnin=2000, n.thin=1, DIC=F)
-
 ```
 
 __Convergence Diagnostics__
@@ -265,7 +273,10 @@ The posterior distributions for LCA models cannot be calculated analytically. Th
 First, we need to make sure that there is no autocorrelation between the samples. We can check this visually by inspecting so-called trace plots (see below). The trace plots should look like a "hairy caterpillar", i.e., you should not see any "mountains" or "valleys" in the plot, just something like white noise.
 
 ```{r}
+# Load the library.
 library(MCMCvis)
+
+# Visualize.
 MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
 ```
 
@@ -301,7 +312,7 @@ Finally, we can take a look at a table that summarizes the characteristics of th
 print(samples)
 ```
 
-The table shows for each parameter the mean (mu.vect), the standard deviation (sd.vect), as well as five quantiles of the posterior distribution. It also contains the R-hat value and an effective sample size for convergence diagnostics (this is related to the samples from the posterior distribution, *not* the number of participants in the study). The effective sample size measure reported in the table also refers to the number of samples from the posterior distribution, and is a measure of convergence closely related to the trace plots. If there is little autocorrelation in the samples (as it should be), the trace plots look like a hairy caterpillar, and the effective sample size reported in this table close to the actual number of samples drawn from the posterior distribution. 
+The table shows for each parameter the mean (mu.vect), the standard deviation (sd.vect), as well as five quantiles of the posterior distribution. It also contains the R-hat value and an effective sample size for convergence diagnostics (this is related to the samples from the posterior distribution, *not* the number of participants in the study). The effective sample size measure reported in the table also refers to the number of samples from the posterior distribution, and is a measure of convergence closely related to the trace plots. If there is little autocorrelation in the samples (as it should be), the trace plots look like a hairy caterpillar, and the effective sample size reported in this table close to the actual number of samples drawn from the posterior distribution.
 
 __Model 1 with informed priors__
 
@@ -315,22 +326,26 @@ Model 2 includes a parameter that accommodates the treatment effect, i.e, the tw
 # Source helpers.
 source("./scripts/helpers/helpers.R")
 
-# define / read in data
-# NOTE: This is simulated data, replace with real data
+# Note.
+# The objects `group1sim` and `group2sim` below contain simulated data.
+# Please replace it with your own data.
+
+# This is simulated data.
 group1sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
                      SpKK = 0.95, SpCCA = 0.95, SpCAA = 0.95, SpPCR = 0.95,
                      prev = 0.9, n = 350)
 group2sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
                      SpKK = 0.95, SpCCA = 0.95, SpCAA = 0.95, SpPCR = 0.95,
                      prev = 0.8, n = 350)
+
 counts <- matrix(c(group1sim$counts, group2sim$counts), nrow=2, byrow=TRUE)
 n1 <- sum(counts[1,])
 n2 <- sum(counts[2,])
 
-# define data object that is passed on to JAGS
+# Define data object that is passed on to JAGS.
 data <- list("counts", "n1", "n2")
 
-# define starting values for chains
+# Define starting values for chains.
 myinits <-	list(
   list(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
        SpKK = 0.8, SpCCA = 0.8, SpCAA = 0.8, SpPCR = 0.8, genprev=0.9, diff=0.1),
@@ -342,11 +357,11 @@ myinits <-	list(
        SpKK = 0.8, SpCCA = 0.8, SpCAA = 0.8, SpPCR = 0.8, genprev=0.9, diff=0.05)
 )
 
-# parameters to be monitored
+# Parameters to be monitored.
 parameters <- c("SeKK", "SeCCA", "SeCAA", "SePCR",
                 "SpKK", "SpCCA", "SpCAA", "SpPCR", "genprev", "diff")
 
-# MCMC
+# MCMC.
 samples <- jags(data, inits=myinits, parameters,
                 model.file ="./models/LCA_simple_treatment_flatPriors.txt", n.chains=4, n.iter=10000,
                 n.burnin=3000, n.thin=1, DIC=F)
@@ -360,6 +375,7 @@ Convergence diagnostics for Model 2 can be determined using the code below. Plea
 
 ```{r eval=FALSE}
 MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
+
 samples$BUGSoutput$summary[,"Rhat"]
 ```
 
@@ -369,7 +385,9 @@ Parameter estimates from the posterior distribution can be obtained using the co
 
 ```{r eval=FALSE}
 MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
+
 MCMCplot(samples)
+
 print(samples)
 ```
 
@@ -393,18 +411,22 @@ The model can be fitted using the following code:
 # Source helpers.
 source("./scripts/helpers/helpers.R")
 
-# define / read in data
-# NOTE: This is simulated data, replace with real data
+# Note.
+# The object `sim` below contains simulated data.
+# Please replace it with your own data.
+
+# This is simulated data.
 sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
                      SpKK = 0.95, SpCCA = 0.95, SpCAA = 0.95, SpPCR = 0.95,
                      prev = 0.9, n = 350)
+
 counts <- sim[,5]
 n <- sum(counts)
 
-# define data object that is passed on to JAGS
+# Define data object that is passed on to JAGS.
 data <- list("counts", "n")
 
-# define starting values for chains
+# Define starting values for chains.
 myinits <-	list(
   list(theta1=0.8, theta2=0.7, theta3=0.9, theta4=0.6, theta5=0.4, theta6=0.7,
        theta7=0.6, theta8=0.7, theta12=0.8, theta16=0.7, theta24=0.9),
@@ -416,10 +438,10 @@ myinits <-	list(
        theta7=0.4, theta8=0.6, theta12=0.5, theta16=0.4, theta24=0.6)
 )
 
-# parameters to be monitored
+# Parameters to be monitored.
 parameters <- c("prev", "Se1", "Sp1", "Se2", "Sp2", "Se3", "Sp3", "Se4", "Sp4")
 
-# MCMC
+# MCMC.
 samples <- jags(data, inits=myinits, parameters,
                 model.file ="./models/LCA_dependent_2Tests.txt", n.chains=4, n.iter=15000,
                 n.burnin=5000, n.thin=1, DIC=F)
@@ -435,6 +457,7 @@ Convergence diagnostics for Model 3 can be determined using the code below. Plea
 
 ```{r eval=FALSE}
 MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
+
 samples$BUGSoutput$summary[,"Rhat"]
 ```
 
@@ -444,32 +467,38 @@ Parameter estimates from the posterior distribution can be obtained using the co
 
 ```{r eval=FALSE}
 MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
+
 MCMCplot(samples)
+
 print(samples)
 ```
 
 #### Model 4: Conditional Dependence Between All Tests
 
-Model 4 allows for conditional dependence between all tests. To make this model identifiable, we constrain the specificity of the first three tests in the result pattern table to be equal to 1. Additionally, we impose mild probabilistic constraints through the prior distributions: We impose a Beta(3.05, 1.51) prior on estimates of sensitivity, constrain the sum of sensitivity and specificity of Test 4 to be larger than 1, and constrain the prevalence to lie between values of [1/n, 1-1/n] to avoid that the sampling gets stuck at the limits of the parameter space.
+Model 4 allows for conditional dependence between all tests. To make this model identifiable, we constrain the specificity of the first three tests in the result pattern table to be equal to 1. Additionally, we impose mild probabilistic constraints through the prior distributions: We impose a `Beta(3.05, 1.51)` prior on estimates of sensitivity, constrain the sum of sensitivity and specificity of Test 4 to be larger than 1, and constrain the prevalence to lie between values of [1/n, 1-1/n] to avoid that the sampling gets stuck at the limits of the parameter space.
 
-The interpretation of parameters in Model 4 is analogue to Model 3, and a list of all model parameters can be found in the document "./docs/ParameterOverview.pdf". Model 4 can be fitted using the following code:
+The interpretation of parameters in Model 4 is analogue to Model 3, and a list of all model parameters can be found in the document `"./docs/ParameterOverview.pdf"`. Model 4 can be fitted using the following code:
 
 ```{r eval=FALSE}
 # Source helpers.
 source("./scripts/helpers/helpers.R")
 
-# define / read in data
-# NOTE: This is simulated data, replace with real data
+# Note.
+# The object `sim` below contains simulated data.
+# Please replace it with your own data.
+
+# This is simulated data.
 sim <- sim.LCA(SeKK = 0.7, SeCCA = 0.7, SeCAA = 0.7, SePCR = 0.7,
                      SpKK = 1, SpCCA = 1, SpCAA = 1, SpPCR = 0.8,
                      prev = 0.9, n = 150)
+
 counts <- sim[,5]
 n <- sum(counts)
 
-# define data object that is passed on to JAGS
+# Define data object that is passed on to JAGS.
 data <- list("counts", "n")
 
-# define starting values for chains
+# Define starting values for chains.
 myinits <-	list(
   list(theta1=0.9, theta2=0.6, theta4=0.5, theta5=0.5,
        theta8=0.8, theta9=0.8, theta10=0.7, theta11=0.7, theta16=0.5,
@@ -489,14 +518,13 @@ myinits <-	list(
        theta22=0.5, theta23=0.5, theta24=0.5)
 )
 
-# parameters to be monitored
+# Parameters to be monitored.
 parameters <- c("prev", "Se1", "Se2", "Se3", "Se4", "Sp4")
 
-# MCMC
+# MCMC.
 samples <- jags(data, inits=myinits, parameters,
                 model.file ="./models/LCA_dependent_Spec123Is1.txt", n.chains=4, n.iter=100000,
                 n.burnin=3000, n.thin=20, DIC=F)
-
 ```
 
 __Convergence Diagnostics__
@@ -505,6 +533,7 @@ Convergence diagnostics for Model 4 can be determined using the code below. Plea
 
 ```{r eval=FALSE}
 MCMCtrace(samples, type="trace", ind=TRUE, pdf=FALSE)
+
 samples$BUGSoutput$summary[,"Rhat"]
 ```
 
@@ -514,7 +543,9 @@ Parameter estimates from the posterior distribution can be obtained using the co
 
 ```{r eval=FALSE}
 MCMCtrace(samples, type="density", ind=TRUE, pdf=FALSE, ISB=FALSE)
+
 MCMCplot(samples)
+
 print(samples)
 ```
 
@@ -523,5 +554,4 @@ Fitting all of the statistical models described above will yield a large number 
 
 Although not the main focus of this study, the proposed analyses also allow preliminary conclusions about the treatment effectiveness. Since prevalence is assessed at each measurement occasion, it is possible to monitor prevalence estimates over the course of time, and descriptively check whether there is a decrease in prevalence. Note, however, that our models do not account for dependency of single data points due to repeated measurements. This means that the models do not "know" that the participants in the samples at different measurement occasions are the same. Therefore, observed trends in prevalence should be taken with a grain of salt.
 
-
-
+*End of the document.*
